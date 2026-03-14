@@ -9,4 +9,3 @@ List fitur
 - kompress image karena terlalu gede sizenya
 - redesign catalog product
 - tambah kolom isDisplay (apakah produk ditampilkan di katalog atau tidak)
--

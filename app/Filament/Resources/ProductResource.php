@@ -34,91 +34,91 @@ class ProductResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-        ->schema([
-            Forms\Components\Select::make('category_id')
-                ->relationship('category', 'category_name')
-                ->required()
-                ->native(false),
-            TextInput::make('name')
-                ->required()
-                ->unique(Product::class, 'name', fn ($record) => $record),
-            Forms\Components\TextInput::make('price')->numeric()->required(),
-            Forms\Components\TextInput::make('stock')->numeric()->required(),
-            RichEditor::make('description')
-                ->required()
-                ->columnSpan(['sm' => 2])
-                ->disableToolbarButtons([
-                    'attachFiles',
-                    'codeBlock',
-                    'h1',
-                    'h2',
-                    'h3',
-                    'quote',
-                    'clearFormatting',
-                    'indent',
-                    'outdent',
-                ]),
-            Forms\Components\FileUpload::make('image_thumbnail')
-                ->label('Thumbnail')
-                ->image()
-                ->imageEditor()
-                ->directory('products/thumbnails')
-                ->disk('public')
-                ->required()
-                ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
-                    $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '.webp';
-                    $path = 'products/thumbnails/' . $filename;
-            
-                    // Baca gambar (format apa pun) lalu convert ke truecolor
-                    $img = imagecreatefromstring(file_get_contents($file->getRealPath()));
-                    if (!$img) {
-                        // fallback: simpan file asli kalau gagal dibaca
-                        return $file->storeAs('products/thumbnails', $file->getClientOriginalName(), 'public');
-                    }
-                    imagepalettetotruecolor($img);
-                    imagealphablending($img, true);
-                    imagesavealpha($img, true);
-            
-                    // Encode ke WebP kualitas 75
-                    ob_start();
-                    imagewebp($img, null, 75);
-                    $binary = ob_get_clean();
-                    imagedestroy($img);
-            
-                    Storage::disk('public')->put($path, $binary);
-                    return $path; // path .webp disimpan ke DB
-                }),
-                
-            Forms\Components\FileUpload::make('images')
-                ->label('Gambar Produk')
-                ->multiple()
-                ->image()
-                ->imageEditor()
-                ->panelLayout('grid')
-                ->directory('products/images')
-                ->disk('public')
-                ->required()
-                ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
-                    $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '.webp';
-                    $path = 'products/images/' . $filename;
-            
-                    $img = imagecreatefromstring(file_get_contents($file->getRealPath()));
-                    if (!$img) {
-                        return $file->storeAs('products/images', $file->getClientOriginalName(), 'public');
-                    }
-                    imagepalettetotruecolor($img);
-                    imagealphablending($img, true);
-                    imagesavealpha($img, true);
-            
-                    ob_start();
-                    imagewebp($img, null, 75);
-                    $binary = ob_get_clean();
-                    imagedestroy($img);
-            
-                    Storage::disk('public')->put($path, $binary);
-                    return $path;
-                })
-        ]);
+            ->schema([
+                Forms\Components\Select::make('category_id')
+                    ->relationship('category', 'category_name')
+                    ->required()
+                    ->native(false),
+                TextInput::make('name')
+                    ->required()
+                    ->unique(Product::class, 'name', fn($record) => $record),
+                Forms\Components\TextInput::make('price')->numeric()->required(),
+                Forms\Components\TextInput::make('stock')->numeric()->required(),
+                RichEditor::make('description')
+                    ->required()
+                    ->columnSpan(['sm' => 2])
+                    ->disableToolbarButtons([
+                        'attachFiles',
+                        'codeBlock',
+                        'h1',
+                        'h2',
+                        'h3',
+                        'quote',
+                        'clearFormatting',
+                        'indent',
+                        'outdent',
+                    ]),
+                Forms\Components\FileUpload::make('image_thumbnail')
+                    ->label('Thumbnail')
+                    ->image()
+                    ->imageEditor()
+                    ->directory('products/thumbnails')
+                    ->disk('public')
+                    ->required()
+                    ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
+                        $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '.webp';
+                        $path = 'products/thumbnails/' . $filename;
+
+                        // Baca gambar (format apa pun) lalu convert ke truecolor
+                        $img = imagecreatefromstring(file_get_contents($file->getRealPath()));
+                        if (!$img) {
+                            // fallback: simpan file asli kalau gagal dibaca
+                            return $file->storeAs('products/thumbnails', $file->getClientOriginalName(), 'public');
+                        }
+                        imagepalettetotruecolor($img);
+                        imagealphablending($img, true);
+                        imagesavealpha($img, true);
+
+                        // Encode ke WebP kualitas 75
+                        ob_start();
+                        imagewebp($img, null, 75);
+                        $binary = ob_get_clean();
+                        imagedestroy($img);
+
+                        Storage::disk('public')->put($path, $binary);
+                        return $path; // path .webp disimpan ke DB
+                    }),
+
+                Forms\Components\FileUpload::make('images')
+                    ->label('Gambar Produk')
+                    ->multiple()
+                    ->image()
+                    ->imageEditor()
+                    ->panelLayout('grid')
+                    ->directory('products/images')
+                    ->disk('public')
+                    ->required()
+                    ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
+                        $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '.webp';
+                        $path = 'products/images/' . $filename;
+
+                        $img = imagecreatefromstring(file_get_contents($file->getRealPath()));
+                        if (!$img) {
+                            return $file->storeAs('products/images', $file->getClientOriginalName(), 'public');
+                        }
+                        imagepalettetotruecolor($img);
+                        imagealphablending($img, true);
+                        imagesavealpha($img, true);
+
+                        ob_start();
+                        imagewebp($img, null, 75);
+                        $binary = ob_get_clean();
+                        imagedestroy($img);
+
+                        Storage::disk('public')->put($path, $binary);
+                        return $path;
+                    })
+            ]);
     }
 
     public static function table(Table $table): Table
@@ -135,9 +135,9 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('price')->money('IDR')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('stock')
-                    ->searchable()
+                Tables\Columns\TextInputColumn::make('stock')
                     ->sortable()
+                    ->rules(['required', 'integer', 'min:0'])
             ])
             ->filters([
                 SelectFilter::make('category')
@@ -157,7 +157,7 @@ class ProductResource extends Resource
                         if (empty($data['value'])) {
                             return $query;
                         }
-                        
+
                         // Apply the appropriate filter based on the selected value
                         return match ($data['value']) {
                             'out_of_stock' => $query->where('stock', 0),
@@ -176,7 +176,7 @@ class ProductResource extends Resource
                 Tables\Actions\CreateAction::make(),
             ]);
     }
-    
+
     public static function getPages(): array
     {
         return [
@@ -184,6 +184,6 @@ class ProductResource extends Resource
             'create' => Pages\CreateProduct::route('/create'),
             'edit' => Pages\EditProduct::route('/{record}/edit'),
         ];
-    }    
+    }
 
 }
