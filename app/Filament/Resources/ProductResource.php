@@ -1,0 +1,189 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use Closure;
+use Filament\Forms;
+use Filament\Tables;
+use App\Models\Product;
+use Filament\Forms\Form;
+use Filament\Tables\Table;
+use Illuminate\Support\Str;
+use App\Models\ProductImage;
+use Filament\Resources\Resource;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\RichEditor;
+use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Filters\TernaryFilter;
+use App\Filament\Resources\ProductResource\Pages;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\ProductResource\RelationManagers;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Illuminate\Support\Facades\Storage;
+
+class ProductResource extends Resource
+{
+    protected static ?string $model = Product::class;
+
+    protected static ?string $navigationIcon = 'heroicon-o-archive-box';
+
+    public static function form(Form $form): Form
+    {
+        return $form
+        ->schema([
+            Forms\Components\Select::make('category_id')
+                ->relationship('category', 'category_name')
+                ->required()
+                ->native(false),
+            TextInput::make('name')
+                ->required()
+                ->unique(Product::class, 'name', fn ($record) => $record),
+            Forms\Components\TextInput::make('price')->numeric()->required(),
+            Forms\Components\TextInput::make('stock')->numeric()->required(),
+            RichEditor::make('description')
+                ->required()
+                ->columnSpan(['sm' => 2])
+                ->disableToolbarButtons([
+                    'attachFiles',
+                    'codeBlock',
+                    'h1',
+                    'h2',
+                    'h3',
+                    'quote',
+                    'clearFormatting',
+                    'indent',
+                    'outdent',
+                ]),
+            Forms\Components\FileUpload::make('image_thumbnail')
+                ->label('Thumbnail')
+                ->image()
+                ->imageEditor()
+                ->directory('products/thumbnails')
+                ->disk('public')
+                ->required()
+                ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
+                    $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '.webp';
+                    $path = 'products/thumbnails/' . $filename;
+            
+                    // Baca gambar (format apa pun) lalu convert ke truecolor
+                    $img = imagecreatefromstring(file_get_contents($file->getRealPath()));
+                    if (!$img) {
+                        // fallback: simpan file asli kalau gagal dibaca
+                        return $file->storeAs('products/thumbnails', $file->getClientOriginalName(), 'public');
+                    }
+                    imagepalettetotruecolor($img);
+                    imagealphablending($img, true);
+                    imagesavealpha($img, true);
+            
+                    // Encode ke WebP kualitas 75
+                    ob_start();
+                    imagewebp($img, null, 75);
+                    $binary = ob_get_clean();
+                    imagedestroy($img);
+            
+                    Storage::disk('public')->put($path, $binary);
+                    return $path; // path .webp disimpan ke DB
+                }),
+                
+            Forms\Components\FileUpload::make('images')
+                ->label('Gambar Produk')
+                ->multiple()
+                ->image()
+                ->imageEditor()
+                ->panelLayout('grid')
+                ->directory('products/images')
+                ->disk('public')
+                ->required()
+                ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
+                    $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '.webp';
+                    $path = 'products/images/' . $filename;
+            
+                    $img = imagecreatefromstring(file_get_contents($file->getRealPath()));
+                    if (!$img) {
+                        return $file->storeAs('products/images', $file->getClientOriginalName(), 'public');
+                    }
+                    imagepalettetotruecolor($img);
+                    imagealphablending($img, true);
+                    imagesavealpha($img, true);
+            
+                    ob_start();
+                    imagewebp($img, null, 75);
+                    $binary = ob_get_clean();
+                    imagedestroy($img);
+            
+                    Storage::disk('public')->put($path, $binary);
+                    return $path;
+                })
+        ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('category.category_name')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\ImageColumn::make('image_thumbnail'),
+                Tables\Columns\TextColumn::make('price')->money('IDR')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('stock')
+                    ->searchable()
+                    ->sortable()
+            ])
+            ->filters([
+                SelectFilter::make('category')
+                    ->relationship('category', 'category_name')
+                    ->multiple()
+                    ->preload(),
+                SelectFilter::make('stock')
+                    ->native(false)
+                    ->label('Stock')
+                    ->options([
+                        'in_stock' => '> 2',
+                        'out_of_stock' => '0',
+                        'low_stock' => '< 2'
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        // Check if a value is selected
+                        if (empty($data['value'])) {
+                            return $query;
+                        }
+                        
+                        // Apply the appropriate filter based on the selected value
+                        return match ($data['value']) {
+                            'out_of_stock' => $query->where('stock', 0),
+                            'low_stock' => $query->where('stock', '<', 3)->where('stock', '>', 0),
+                            'in_stock' => $query->where('stock', '>=', 3),
+                            default => $query,
+                        };
+                    }),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ])
+            ->emptyStateActions([
+                Tables\Actions\CreateAction::make(),
+            ]);
+    }
+    
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListProducts::route('/'),
+            'create' => Pages\CreateProduct::route('/create'),
+            'edit' => Pages\EditProduct::route('/{record}/edit'),
+        ];
+    }    
+
+}
