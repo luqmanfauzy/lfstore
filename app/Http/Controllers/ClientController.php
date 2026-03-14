@@ -10,20 +10,13 @@ class ClientController extends Controller
 {
     public static function home()
     {
-        $produkUnggulan = Product::whereIn('name', [
-            'kacamata photocromic ptc-02',
-            'kacamata hitam gelap',
-            'kacamata bening anti radiasi leopard model bulat',
-            'kaos kaki panjang oldskull sebetis'
-        ])->get();
-
         $allCategories = Category::all();
 
         $description = 'Temukan berbagai aksesoris kacamata dan kaos kaki terbaik di LF Store — dari kacamata hitam, bening anti radiasi, hingga photocromic. Juga tersedia berbagai macam kaos kaki!';
         $keywords = 'kacamata, kacamata hitam, kacamata bening, kacamata photocromic, kaos kaki panjang, aksesoris kacamata';
         $ogTitle = 'LF Store | Aksesoris Kacamata dan Kaos Kaki';
 
-        return view('newHome', compact('produkUnggulan', 'allCategories', 'description', 'keywords', 'ogTitle'));
+        return view('Home', compact('allCategories', 'description', 'keywords', 'ogTitle'));
     }
 
     public function catalog(Request $request)

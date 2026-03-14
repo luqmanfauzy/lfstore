@@ -28,6 +28,11 @@ class Product extends Model
         'is_display'
     ];
 
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class);
