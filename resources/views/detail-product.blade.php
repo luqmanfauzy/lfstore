@@ -15,424 +15,519 @@
     <meta property="og:image" content="{{ asset('storage/' . $data->image_thumbnail) }}">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta name="twitter:card" content="summary_large_image">
-    {{-- tailwind --}}
+
+    {{-- tailwind / vite --}}
     @vite('resources/css/app.css')
-    {{-- google font poppins --}}
+
+    {{-- google font: Inter --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-    {{-- tailwind css --}}
+
+    {{-- tailwind css CDN --}}
     <script src="https://cdn.tailwindcss.com"></script>
+
     {{-- fontawesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    {{-- boxicon --}}
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    {{-- bootstrap --}}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-    <style>
-        .bordered {
-            border: 1px solid black;
-        }
 
+    {{-- boxicons --}}
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+    {{-- Alpine.js for dropdowns & mobile menu --}}
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x/dist/cdn.min.js"></script>
+
+    <style>
         html {
             scroll-behavior: smooth;
         }
 
         body {
-            font-family: "Poppins", serif;
+            font-family: "Inter", sans-serif;
+            background-color: #FAFAFA;
+        }
+
+        /* Hide scrollbar for thumbnail scroll */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Markdown prose styling overrides for description */
+        .prose p {
+            margin-bottom: 0.75rem;
+            color: #4b5563;
+            line-height: 1.6;
+        }
+
+        .prose ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: #4b5563;
+        }
+
+        .prose strong {
+            color: #111827;
+            font-weight: 600;
         }
     </style>
 </head>
 
-<body class="pt-5">
-    <!-- Navigation -->
-    <nav class="bg-black shadow fixed top-0 left-0 w-full z-50">
-        <div class="max-w-screen-xl mx-auto flex items-center justify-between px-4 py-2">
-            <div class="flex items-center ms-2">
-                <a href="{{ route('home') }}">
-                    <h3 class="text-2xl lg:text-3xl font-bold text-custom-light-gray drop-shadow-lg">
-                        LF Store
-                    </h3>
+<body class="text-gray-800 antialiased font-sans overflow-x-hidden">
+
+    <!-- Navigation (Sticky & Glassmorphism) -->
+    <nav x-data="{ mobileMenuOpen: false }"
+        class="bg-white/80 backdrop-blur-lg border-b border-gray-100 fixed top-0 left-0 w-full z-50 transition-all duration-300">
+        <div class="max-w-screen-xl mx-auto flex items-center justify-between px-4 sm:px-6 py-4 lg:px-8">
+
+            <!-- Logo -->
+            <div class="flex items-center">
+                <a href="{{ route('home') }}" class="flex items-center gap-2">
+                    <span class="text-2xl font-extrabold tracking-tight text-gray-900">LF<span
+                            class="text-blue-600">Store</span></span>
                 </a>
             </div>
 
-            <div class="hidden md:flex space-x-4">
-                <a href="{{ route('home') }}" class="text-white hover:text-gray-500">Beranda</a>
-                <a href="{{ route('catalog') }}" class="text-white hover:text-gray-500">Katalog</a>
-                {{-- dropdown category --}}
-                <div class="dropdown">
-                    <a class="dropdown-toggle text-white text-decoration-none" href="#" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        Kategori
-                    </a>
-                    <ul class="dropdown-menu">
+            <!-- Desktop Links -->
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="{{ route('home') }}"
+                    class="text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors">Beranda</a>
+                <a href="{{ route('catalog') }}" class="text-sm font-medium text-blue-600 transition-colors">Katalog</a>
+
+                {{-- Dropdown Kategori (Alpine Action) --}}
+                <div x-data="{ open: false }" class="relative" @click.away="open = false" @mouseleave="open = false"
+                    @mouseover="open = true">
+                    <button @click="open = !open"
+                        class="text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors flex items-center gap-1">
+                        Kategori <i class='bx bx-chevron-down text-lg'></i>
+                    </button>
+                    <!-- Dropdown Menu -->
+                    <div x-show="open" x-transition.opacity.duration.200ms style="display: none;"
+                        class="absolute top-full left-0 mt-2 w-56 bg-white border border-gray-100 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] py-2 z-50">
                         @foreach ($categories as $category)
-                           <li><a class="dropdown-item" href="{{ route('category-product', $category->slug) }}">{{ $category->category_name }}</a></li> 
+                            <a href="{{ route('category-product', $category->slug) }}"
+                                class="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition-colors">
+                                {{ $category->category_name }}
+                            </a>
                         @endforeach
-                    </ul>
+                    </div>
                 </div>
-                <a href="{{ route('home') }}" class="text-white hover:text-gray-500">Tentang Kami</a>
+
+                <a href="{{ route('home') }}#about"
+                    class="text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors">Tentang Kami</a>
             </div>
 
-            <button id="menu-button"
-                class="md:hidden p-2 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
-                </svg>
+            <!-- Header Search Bar -->
+            <div class="hidden md:flex items-center space-x-5">
+                <form action="{{ route('catalog') }}" method="GET" class="relative">
+                    <input type="text" name="query" value="" placeholder="Cari produk..."
+                        class="w-48 lg:w-64 pl-4 pr-10 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-sm">
+                    <button type="submit"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors">
+                        <i class='bx bx-search text-lg'></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Mobile Menu Toggle Button -->
+            <button @click="mobileMenuOpen = !mobileMenuOpen"
+                class="md:hidden p-2 text-gray-500 hover:text-blue-600 transition-colors focus:outline-none rounded-lg focus:ring-2 focus:ring-gray-100">
+                <i class='bx bx-menu text-3xl' x-show="!mobileMenuOpen"></i>
+                <i class='bx bx-x text-3xl' x-show="mobileMenuOpen" style="display: none;"></i>
             </button>
         </div>
 
-        <div id="mobile-menu" class="md:hidden hidden">
-            <div class="flex flex-col p-4 space-y-2 bg-white border-t border-gray-200">
-                <a href="{{ route('home') }}" class="text-gray-700 hover:text-black">Beranda</a>
-                <a href="{{ route('catalog') }}" class="text-gray-700 hover:text-black">Katalog</a>
-                {{-- dropdown category --}}
-                <div class="dropdown">
-                    <a class="dropdown-toggle text-gray-700 text-decoration-none" href="#" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        Kategori
-                    </a>
-                    <ul class="dropdown-menu">
+        <!-- Mobile Menu (AlpineJS) -->
+        <div x-show="mobileMenuOpen" x-transition.opacity style="display: none;"
+            class="md:hidden bg-white border-t border-gray-100 absolute w-full shadow-lg h-screen overflow-y-auto pb-24">
+            <div class="px-4 py-6 space-y-4">
+                <!-- Mobile Search -->
+                <form action="{{ route('catalog') }}" method="GET" class="relative mb-6">
+                    <input type="text" name="query" value=""
+                        class="w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        placeholder="Cari produk...">
+                    <button type="submit"
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600">
+                        <i class='bx bx-search text-xl'></i>
+                    </button>
+                </form>
+
+                <a href="{{ route('home') }}"
+                    class="block text-base font-medium text-gray-700 hover:text-blue-600">Beranda</a>
+                <a href="{{ route('catalog') }}" class="block text-base font-medium text-blue-600">Katalog</a>
+
+                {{-- Mobile Dropdown Kategori --}}
+                <div x-data="{ subOpen: false }" class="border-y border-gray-100 py-4 my-2">
+                    <button @click="subOpen = !subOpen"
+                        class="w-full text-left text-base font-medium text-gray-700 hover:text-blue-600 flex justify-between items-center focus:outline-none">
+                        Kategori <i class='bx bx-chevron-down text-xl transition-transform duration-300'
+                            :class="{'rotate-180': subOpen}"></i>
+                    </button>
+                    <div x-show="subOpen" x-transition.opacity style="display: none;" class="mt-4 pl-4 space-y-4">
                         @foreach ($categories as $category)
-                           <li><a class="dropdown-item" href="{{ route('category-product', $category->slug) }}">{{ $category->category_name }}</a></li> 
+                            <a href="{{ route('category-product', $category->slug) }}"
+                                class="block text-sm text-gray-500 hover:text-blue-600 transition-colors">
+                                {{ $category->category_name }}
+                            </a>
                         @endforeach
-                    </ul>
+                    </div>
                 </div>
-                <a href="{{ route('home') }}" class="text-gray-700 hover:text-black">Tentang Kami</a>
+
+                <a href="{{ route('home') }}#about"
+                    class="block text-base font-medium text-gray-700 hover:text-blue-600 pb-2">Tentang Kami</a>
             </div>
         </div>
     </nav>
 
-    <div class="lg:grid grid-cols-3 gap-2">
-        <div class="col-span-2 ">
-            <div class="flex justify-center items-center mb-8 mt-12">
-                <h2 class="text-3xl font-semibold">Detail Produk</h2>
-            </div>
-            <section class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md border-2 mt-2">
-                <div class="grid md:grid-cols-2 gap-6">
-                    <!-- Image Carousel Section -->
-                    <div class="relative">
-                        <!-- Main Image -->
-                        <div id="mainImage" class="w-full aspect-square overflow-hidden">
-                            <img id="currentImage" src="{{ asset('storage/' . $data->image_thumbnail) }}"
-                                class="w-full h-full object-cover" alt="{{ $data->name }}">
-                        </div>
+    <!-- Main Product Detail Section -->
+    <section class="min-h-screen pt-28 pb-16 max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                        @php
-                            $images = $data->images;
-                            $imageCount = 1 + count($images);
-                        @endphp
+        <!-- Breadcrumbs -->
+        <nav class="flex mb-8 text-sm w-full" aria-label="Breadcrumb">
+            <ol class="flex flex-wrap items-center gap-y-2 gap-x-1 sm:gap-x-2 text-xs sm:text-sm">
+                <li class="flex items-center">
+                    <a href="{{ route('home') }}"
+                        class="flex items-center text-gray-500 hover:text-blue-600 transition-colors">
+                        <i class="bx bx-home mr-1 text-base"></i>Beranda
+                    </a>
+                </li>
+                <li class="flex items-center">
+                    <i class="bx bx-chevron-right text-gray-400 text-base mx-0 sm:mx-1"></i>
+                    <a href="{{ route('catalog') }}"
+                        class="text-gray-500 hover:text-blue-600 transition-colors">Katalog</a>
+                </li>
+                <li class="flex items-center">
+                    <i class="bx bx-chevron-right text-gray-400 text-base mx-0 sm:mx-1"></i>
+                    <a href="{{ route('category-product', $data->category->slug) }}"
+                        class="text-gray-500 hover:text-blue-600 transition-colors">{{ $data->category->category_name }}</a>
+                </li>
+                <li class="flex items-center" aria-current="page">
+                    <i class="bx bx-chevron-right text-gray-400 text-base mx-0 sm:mx-1"></i>
+                    <span class="text-gray-900 font-medium truncate max-w-[120px] sm:max-w-xs">{{ $data->name }}</span>
+                </li>
+            </ol>
+        </nav>
 
-                        @if($imageCount < 6)
-                            <script>
-                                window.addEventListener('DOMContentLoaded', function () {
-                                    hideButtonNavigation();
-                                });
-                            </script>
+        <div
+            class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 w-full overflow-hidden">
+            <div class="grid lg:grid-cols-2 gap-6 lg:gap-16">
+
+                <!-- Left: Product Images -->
+                <div class="w-full flex flex-col gap-4 lg:sticky lg:top-28 min-w-0">
+                    @php
+                        $imagesCount = 1 + count($data->images);
+                    @endphp
+                    <!-- Main Featured Image -->
+                    <div id="mainImageContainer"
+                        class="relative group w-full aspect-square md:aspect-[4/3] lg:aspect-square overflow-hidden rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center p-4">
+                        
+                        @if($imagesCount > 1)
+                            <!-- Left Arrow (Main) -->
+                            <button type="button"
+                                class="flex absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center bg-white/90 backdrop-blur border border-gray-200 rounded-full shadow-sm text-gray-600 hover:text-blue-600 hover:border-blue-200 transition-all disabled:opacity-0 disabled:cursor-not-allowed"
+                                onclick="prevImage()" id="main-left-btn">
+                                <i class='bx bx-chevron-left text-2xl'></i>
+                            </button>
                         @endif
 
-                        <!-- Thumbnail Navigation with Carousel Buttons -->
-                        <div class="relative mt-4 w-full">
-                            <!-- Left Button -->
-                            <button type="button"
-                                class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-black hover:text-white text-gray-900 rounded-full shadow p-2 transition disabled:opacity-50"
-                                onclick="scrollThumbnails(-1)" id="thumb-left-btn" aria-label="Scroll left">
-                                <!-- SVG Arrow Left -->
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
+                        <img id="currentImage" src="{{ asset('storage/' . $data->image_thumbnail) }}"
+                            alt="{{ $data->name }}"
+                            class="object-cover w-full h-full rounded-xl mix-blend-multiply transition-opacity duration-300">
 
-                            <!-- Thumbnails Wrapper -->
-                            <div id="thumbnail-container" class="overflow-x-auto pb-2 scroll-smooth">
-                                <div class="flex flex-nowrap space-x-2">
-                                    <!-- Main Thumbnail -->
-                                    <div class="carousel-thumb flex-shrink-0 cursor-pointer border-2 border-transparent hover:border-black rounded-lg"
-                                        onclick="changeImage('{{ asset('storage/' . $data->image_thumbnail) }}')">
-                                        <img src="{{ asset('storage/' . $data->image_thumbnail) }}"
-                                            class="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-cover rounded-lg">
-                                    </div>
-                                    <!-- Additional Images -->
-                                    @foreach ($data->images as $image)
-                                        <div class="carousel-thumb flex-shrink-0 cursor-pointer border-2 border-transparent hover:border-black rounded-lg"
-                                            onclick="changeImage('{{ asset('storage/' . $image->image_path) }}')">
-                                            <img src="{{ asset('storage/' . $image->image_path) }}"
-                                                class="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-cover rounded-lg">
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-
-                            <!-- Right Button -->
+                        @if($imagesCount > 1)
+                            <!-- Right Arrow (Main) -->
                             <button type="button"
-                                class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-black hover:text-white text-gray-900 rounded-full shadow p-2 transition disabled:opacity-50"
-                                onclick="scrollThumbnails(1)" id="thumb-right-btn" aria-label="Scroll right">
-                                <!-- SVG Arrow Right -->
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 5l7 7-7 7" />
-                                </svg>
+                                class="flex absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center bg-white/90 backdrop-blur border border-gray-200 rounded-full shadow-sm text-gray-600 hover:text-blue-600 hover:border-blue-200 transition-all disabled:opacity-0 disabled:cursor-not-allowed"
+                                onclick="nextImage()" id="main-right-btn">
+                                <i class='bx bx-chevron-right text-2xl'></i>
                             </button>
-                        </div>
+                        @endif
                     </div>
 
-                    <!-- Product Details Section -->
-                    <div class="space-y-4 h-100">
-                        <!-- Product Name -->
-                        <h1 class="text-2xl sm:text-3xl font-semibold" title="{{ $data->name }}">
-                            {{ $data->name }}
-                        </h1>
+                    <!-- Image Thumbnails Carousel -->
+                    @if($imagesCount > 1)
+                        <div class="mt-2">
+                            <div id="thumbnail-container"
+                                class="flex gap-3 overflow-x-auto pb-2 scroll-smooth scrollbar-hide px-1">
+                                <!-- Main Thumb -->
+                                <button onclick="changeImage('{{ asset('storage/' . $data->image_thumbnail) }}', this, 0)"
+                                    data-index="0"
+                                    class="thumbnail-btn flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 border-blue-600 bg-gray-50 p-1 transition-colors">
+                                    <img src="{{ asset('storage/' . $data->image_thumbnail) }}"
+                                        class="w-full h-full object-cover rounded-lg mix-blend-multiply">
+                                </button>
+                                <!-- Gallery Thumbs -->
+                                @foreach ($data->images as $index => $image)
+                                    <button onclick="changeImage('{{ asset('storage/' . $image->image_path) }}', this, {{ $index + 1 }})"
+                                        data-index="{{ $index + 1 }}"
+                                        class="thumbnail-btn flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 border-transparent hover:border-blue-300 bg-gray-50 p-1 transition-colors">
+                                        <img src="{{ asset('storage/' . $image->image_path) }}"
+                                            class="w-full h-full object-cover rounded-lg mix-blend-multiply">
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
 
-                        <hr>
+                <!-- Right: Product Info -->
+                <div class="flex flex-col h-full py-2 min-w-0">
 
-                        <!-- Category -->
-                        <p class="text-sm sm:text-lg text-gray-600 flex items-center">
-                            <i class="fa-solid fa-tags me-1"></i>
-                            <a href="{{ route('category-product', $data->category->slug) }}">
-                                : {{ $data->category->category_name }}
-                            </a>
-                        </p>
+                    <a href="{{ route('category-product', $data->category->slug) }}"
+                        class="text-sm font-semibold tracking-wider text-blue-600 uppercase mb-3 inline-block hover:underline">
+                        {{ $data->category->category_name }}
+                    </a>
 
-                        <!-- Price -->
-                        <p class="text-2xl font-semibold text-black">
-                            Rp {{ number_format($data->price, 0, ',', '.') }}
-                        </p>
+                    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight mb-4 break-words">
+                        {{ $data->name }}
+                    </h1>
 
-                        {{-- description --}}
-                        <div class="prose max-w-none text-sm">
-                            <h3 class="text-xl font-semibold mb-2">Deskripsi Produk</h3>
-                            <hr class="mb-2">
+                    <div class="flex items-end gap-3 mb-8">
+                        <span class="text-3xl font-extrabold tracking-tight text-gray-900">
+                            Rp{{ number_format($data->price, 0, ',', '.') }}
+                        </span>
+                        @if($data->stock > 0)
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mb-1.5 border border-green-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span>
+                                Tersedia
+                            </span>
+                        @endif
+                    </div>
+
+                    <div class="border-t border-b border-gray-100 py-6 mb-8">
+                        <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">Detail Produk</h3>
+                        <div class="prose prose-sm text-gray-600 text-base max-w-none break-words">
                             {!! $data->description !!}
                         </div>
-
-                        <!-- check if the product is out of stock -->
-                        @if ($data->stock == 0)
-                            <div
-                                class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg shadow-md flex items-center space-x-2 animate-pulse">
-                                <i class="fa-solid fa-triangle-exclamation text-red-500 text-xl"></i>
-                                <span class="font-semibold text-md sm:text-lg">Maaf, produk ini sedang
-                                    <strong>HABIS</strong> 😢</span>
-                            </div>
-                        @endif
-
-                        {{-- order va whatsapp --}}
-                        @if ($data->stock > 0)
-                            <a href="https://wa.me/6289650710460?text=Halo%20apakah%20{{ $data->name }}%20masih%20ada?%0A%0ALihat%20produk%20di:%20{{ url()->current() }}/"
-                                class="bg-green-600 text-white block px-6 py-3 rounded-lg shadow hover:bg-green-700 text-center mt-3"
-                                target="_blank">
-                                Pesan via Whatsapp
-                                <i class="fa-brands fa-whatsapp"></i>
-                            </a>
-                        @endif
                     </div>
 
+                    <!-- Call to Action -->
+                    <div class="mt-auto">
+                        @if ($data->stock == 0)
+                            <div
+                                class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-2xl flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                                    <i class='bx bx-error-circle text-xl'></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold">Stok Habis</p>
+                                    <p class="text-sm text-red-600">Maaf, produk ini saat ini tidak tersedia.</p>
+                                </div>
+                            </div>
+                        @else
+                            <a href="https://wa.me/6289650710460?text=Halo%20LF%20Store%2C%20apakah%20produk%20*{{ $data->name }}*%20masih%20ada%3F%0A%0ATautan%3A%20{{ url()->current() }}"
+                                target="_blank"
+                                class="group flex items-center justify-center w-full gap-3 bg-gray-900 hover:bg-black text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 shadow-[0_4px_14px_0_rgb(0,0,0,0.2)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.23)] hover:-translate-y-0.5">
+                                <span>Pesan via WhatsApp</span>
+                                <i class='bx bxl-whatsapp text-2xl group-hover:scale-110 transition-transform'></i>
+                            </a>
+                            <p class="text-center text-xs text-gray-400 mt-4 flex items-center justify-center gap-1">
+                                <i class='bx bx-shield-quarter'></i> Pesan dengan aman melalui WhatsApp admin resmi
+                            </p>
+                        @endif
+                    </div>
                 </div>
-            </section>
+            </div>
         </div>
 
-        <div class="hidden lg:block w-full mx-auto ">
-            <div class="flex justify-center items-center mt-12">
-                <h2 class="text-3xl font-semibold">Kategori</h2>
-            </div>
+        <!-- Suggested Products Section -->
+        @if ($suggestedProduct->isNotEmpty())
+            <div class="mt-24 mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 tracking-tight mb-8">Anda Mungkin Juga Suka</h2>
 
-            {{-- category --}}
-            <section class="mx-auto bg-white p-6 rounded-lg mt-2 ">
-                <div class="w-full mx-auto">
-
-                    @foreach ($categories as $category)
-                        <div x-data="{ open: false }" class="mb-2">
-                            <!-- Tombol kategori -->
-                            <button @click="open = !open"
-                                class="w-full bg-black text-white px-4 py-2 flex justify-between items-center">
-                                <span>{{ $category->category_name }}</span>
-                                <span :class="open ? 'rotate-180' : ''" class="transition-transform">
-                                    &#9660;
-                                </span>
-                            </button>
-
-                            <!-- Daftar produk -->
-                            <ul x-show="open" x-collapse class="bg-gray-100 px-4 py-2">
-                                @forelse ($category->products as $product)
-                                    <a href="{{ route('detail', $product->slug) }}">
-                                        <li class="py-1 border-b whitespace-nowrap overflow-hidden text-ellipsis">
-                                            {{ $product->name }}
-                                        </li>
-                                    </a>
-                                @empty
-                                    <li class="py-1 text-gray-500">Tidak ada produk</li>
-                                @endforelse
-                            </ul>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+                    @foreach ($suggestedProduct as $suggested)
+                        <div
+                            class="group flex flex-col bg-white rounded-3xl border border-gray-100/60 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-blue-100 transition-all duration-300">
+                            <a href="{{ route('detail', $suggested->slug) }}"
+                                class="relative aspect-square overflow-hidden bg-gray-50/50 pt-2 px-2 flex items-center justify-center">
+                                <img src="{{ asset('storage/' . $suggested->image_thumbnail) }}" alt="{{ $suggested->name }}"
+                                    class="object-cover w-full h-full rounded-2xl group-hover:scale-105 transition-transform duration-700 ease-in-out mix-blend-multiply">
+                            </a>
+                            <div class="p-4 sm:p-5 flex flex-col flex-1">
+                                <h3
+                                    class="text-sm sm:text-[15px] font-medium text-gray-900 line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors mb-2">
+                                    <a href="{{ route('detail', $suggested->slug) }}">{{ $suggested->name }}</a>
+                                </h3>
+                                <div class="mt-auto pt-3 flex items-center justify-between border-t border-gray-50">
+                                    <p class="text-base sm:text-[17px] font-bold text-gray-900 tracking-tight">
+                                        Rp{{ number_format($suggested->price, 0, ',', '.') }}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     @endforeach
                 </div>
-            </section>
-        </div>
-    </div>
+            </div>
+        @endif
+    </section>
 
-    @if ($suggestedProduct->isNotEmpty())
-        <div class="flex justify-center items-center mb-8 mt-12">
-            <h2 class="text-3xl font-semibold">Suggested Product</h2>
-        </div>
-
-        {{-- suggested products --}}
-        <section class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md border-2 mt-2 mb-16">
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                @foreach ($suggestedProduct as $data)
-                    {{-- card product --}}
-                    <a href="{{ route('detail', $data->slug) }}">
-                        <div
-                            class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition duration-300 cursor-pointer h-[350px] flex flex-col">
-                            <!-- Gambar Produk -->
-                            <img src="{{ asset('storage/' . $data->image_thumbnail) }}" alt="{{ $data->name }}"
-                                class="w-full h-40 object-cover">
-
-                            <!-- Konten Produk -->
-                            <div class="p-3 flex-grow flex flex-col justify-between">
-                                <div>
-                                    <p class="font-semibold text-md md:text-lg mb-2 line-clamp-2" title="{{ $data->name }}">
-                                        {{ $data->name }}
-                                    </p>
-                                </div>
-
-                                <div class="flex flex-wrap justify-between items-center">
-                                    <span class="text-lg font-bold text-black mb-2 sm:mt-2">
-                                        Rp{{ number_format($data->price, 0, ',', '.') }}
-                                    </span>
-                                    <span
-                                        class="text-xs text-white rounded-full bg-black p-2 px-4 w-full sm:w-auto text-center">
-                                        detail <i class="fa-solid fa-arrow-right"></i>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+    <!-- Clean Modern Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-8 pt-16 pb-8 font-sans">
+        <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 mb-12">
+                <!-- Brand Info Section -->
+                <div class="md:col-span-5 lg:col-span-4">
+                    <a href="{{ route('home') }}" class="inline-block mb-6">
+                        <span class="text-2xl font-extrabold tracking-tight text-gray-900">LF<span
+                                class="text-blue-600">Store</span></span>
                     </a>
-                @endforeach
-            </div>
-        </section>
-    @endif
-
-    <div class="lg:hidden my-20">
-        <div class="flex justify-center items-center">
-            <h2 class="text-3xl font-semibold">Kategori</h2>
-        </div>
-
-        {{-- category --}}
-        <section class="max-w-6xl mx-auto bg-white p-6 rounded-lg mt-2">
-            <div class="w-full max-w-2xl mx-auto">
-
-                @foreach ($categories as $category)
-                    <div x-data="{ open: false }" class="mb-2">
-                        <!-- Tombol kategori -->
-                        <button @click="open = !open"
-                            class="w-full bg-black text-white px-4 py-2 flex justify-between items-center">
-                            <span>{{ $category->category_name }}</span>
-                            <span :class="open ? 'rotate-180' : ''" class="transition-transform">
-                                &#9660;
-                            </span>
-                        </button>
-
-                        <!-- Daftar produk -->
-                        <ul x-show="open" x-collapse class="bg-gray-100 px-4 py-2">
-                            @forelse ($category->products as $product)
-                                <a href="{{ route('detail', $product->slug) }}">
-                                    <li class="py-1 border-b whitespace-nowrap overflow-hidden text-ellipsis">
-                                        {{ $product->name }}
-                                    </li>
-                                </a>
-                            @empty
-                                <li class="py-1 text-gray-500">Tidak ada produk</li>
-                            @endforelse
-                        </ul>
+                    <p class="text-gray-500 text-sm leading-relaxed max-w-sm mb-8">
+                        Tampil stylish, hidup lebih percaya diri. Katalog fashion dan aksesori terpercaya untuk gaya
+                        hidup modern Anda.
+                    </p>
+                    <div class="flex space-x-3">
+                        <a href="mailto:luqmannfauzy46@gmail.com"
+                            class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-colors shadow-sm border border-gray-100">
+                            <i class='bx bx-envelope text-lg'></i>
+                        </a>
+                        <a href="https://wa.me/6289650710460" target="_blank"
+                            class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-colors shadow-sm border border-gray-100">
+                            <i class='bx bxl-whatsapp text-lg'></i>
+                        </a>
+                        <a href="https://maps.app.goo.gl/EWj82GEcHddkXy3V7" target="_blank"
+                            class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-colors shadow-sm border border-gray-100">
+                            <i class='bx bx-map text-lg'></i>
+                        </a>
                     </div>
-                @endforeach
-            </div>
-        </section>
-    </div>
+                </div>
 
-    <footer class="bg-black text-white p-6">
-        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-4 items-start">
-            <!-- Logo & Nama -->
-            <div>
-                <p class="text-3xl font-bold mb-2">LF Store</p>
-                <span class="text-gray-300">Tampil stylish, hidup lebih percaya diri.</span>
+                <!-- Quick Links -->
+                <div class="md:col-span-3 lg:col-span-2 lg:col-start-7">
+                    <h4 class="text-gray-900 font-semibold mb-6 tracking-tight">Navigasi</h4>
+                    <ul class="space-y-4">
+                        <li><a href="{{ route('home') }}"
+                                class="text-sm text-gray-500 hover:text-blue-600 transition-colors">Beranda</a></li>
+                        <li><a href="{{ route('catalog') }}"
+                                class="text-sm text-gray-500 hover:text-blue-600 transition-colors">Katalog Produk</a>
+                        </li>
+                        <li><a href="{{ route('home') }}#about"
+                                class="text-sm text-gray-500 hover:text-blue-600 transition-colors">Tentang Kami</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Categories -->
+                <div class="md:col-span-4 lg:col-span-3 lg:col-start-10">
+                    <h4 class="text-gray-900 font-semibold mb-6 tracking-tight">Kategori Utama</h4>
+                    <ul class="space-y-4">
+                        @foreach(collect($categories)->take(4) as $cat_footer)
+                            <li>
+                                <a href="{{ route('category-product', $cat_footer->slug) }}"
+                                    class="text-sm text-gray-500 hover:text-blue-600 transition-colors">
+                                    {{ $cat_footer->category_name }}
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
             </div>
 
-            <!-- Navigasi -->
-            <div class="flex flex-col md:flex-row md:justify-center gap-2 text-sm">
-                <a href="{{ route('home') }}" class="hover:text-gray-300">Home</a>
-                <a href="{{ route('home') }}" class="hover:text-gray-300">About</a>
-                <a href="{{ route('catalog') }}" class="hover:text-gray-300">Products</a>
+            <div class="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-sm text-gray-400">
+                    Made with <i class='bx bxs-heart text-red-500 mx-1'></i> by <span
+                        class="font-medium text-gray-600">LF Store</span> &copy; <span id="currentYear"></span>. All
+                    rights reserved.
+                </p>
+                <div class="flex items-center space-x-6">
+                    <a href="#" class="text-xs text-gray-400 hover:text-gray-600">Kebijakan Privasi</a>
+                    <a href="#" class="text-xs text-gray-400 hover:text-gray-600">Syarat & Ketentuan</a>
+                </div>
             </div>
-
-            <!-- Ikon Sosial -->
-            <div class="flex justify-start md:justify-end space-x-4 text-2xl">
-                <a href="mailto:luqmannfauzy46@gmail.com" title="Email">
-                    <i class='bx bxl-gmail'></i>
-                </a>
-                <a href="https://wa.me/6289650710460" target="_blank" title="WhatsApp">
-                    <i class='bx bxl-whatsapp'></i>
-                </a>
-                <a href="https://maps.app.goo.gl/EWj82GEcHddkXy3V7" target="_blank" title="Lokasi">
-                    <i class='bx bx-map'></i>
-                </a>
-            </div>
-        </div>
-
-        <!-- Bawah -->
-        <div class="mt-6 border-t border-gray-700 pt-4 text-center text-sm text-gray-400">
-            Made with ❤️ by LF Store © <span id="currentYear"></span>. All rights reserved.
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x/dist/cdn.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Scripts -->
     <script>
-        const menuButton = document.getElementById('menu-button');
-        const mobileMenu = document.getElementById('mobile-menu');
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
 
-        menuButton.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
+        // Thumbnail Image Slider & Switcher Logic
+        const mainImage = document.getElementById('currentImage');
+        const container = document.getElementById('thumbnail-container');
+        let currentIndex = 0;
+        let thumbnails = [];
+        let totalImages = 0;
+
+        function updateMainArrows() {
+            const leftBtn = document.getElementById('main-left-btn');
+            const rightBtn = document.getElementById('main-right-btn');
+            
+            if (leftBtn && rightBtn) {
+                if (totalImages <= 1) {
+                    leftBtn.style.display = 'none';
+                    rightBtn.style.display = 'none';
+                } else {
+                    leftBtn.disabled = currentIndex === 0;
+                    rightBtn.disabled = currentIndex === totalImages - 1;
+                }
+            }
+        }
+
+        function changeImage(src, btnElement, index) {
+            if (index !== undefined) {
+                currentIndex = index;
+            }
+
+            // Fade effect for main image
+            mainImage.style.opacity = '0';
+            setTimeout(() => {
+                mainImage.src = src;
+                mainImage.style.opacity = '1';
+            }, 150);
+
+            // Update active state on thumbnails
+            if (thumbnails.length === 0) {
+                thumbnails = document.querySelectorAll('.thumbnail-btn');
+            }
+            
+            thumbnails.forEach(btn => {
+                btn.classList.remove('border-blue-600');
+                btn.classList.add('border-transparent');
+            });
+            btnElement.classList.add('border-blue-600');
+            btnElement.classList.remove('border-transparent');
+            
+            // Scroll thumbnail into view
+            btnElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            
+            updateMainArrows();
+        }
+
+        function prevImage() {
+            if (thumbnails.length === 0) {
+                thumbnails = document.querySelectorAll('.thumbnail-btn');
+            }
+            if (currentIndex > 0) {
+                const prevThumb = thumbnails[currentIndex - 1];
+                const src = prevThumb.querySelector('img').src;
+                changeImage(src, prevThumb, currentIndex - 1);
+            }
+        }
+
+        function nextImage() {
+            if (thumbnails.length === 0) {
+                thumbnails = document.querySelectorAll('.thumbnail-btn');
+            }
+            if (currentIndex < totalImages - 1) {
+                const nextThumb = thumbnails[currentIndex + 1];
+                const src = nextThumb.querySelector('img').src;
+                changeImage(src, nextThumb, currentIndex + 1);
+            }
+        }
+
+        window.addEventListener('load', () => {
+            thumbnails = document.querySelectorAll('.thumbnail-btn');
+            totalImages = thumbnails.length;
+            updateMainArrows();
         });
-
-        lucide.createIcons();
-
-        //navigation image product
-        function changeImage(src) {
-            document.getElementById('currentImage').src = src;
-        }
-
-        function scrollThumbnails(direction) {
-            const container = document.getElementById('thumbnail-container');
-            const thumb = container.querySelector('.carousel-thumb');
-            const scrollAmount = thumb ? thumb.offsetWidth + 8 : 100; // 8px = space-x-2
-            container.scrollBy({ left: direction * scrollAmount * 2, behavior: 'smooth' });
-        }
-
-        function updateNavButtons() {
-            const container = document.getElementById('thumbnail-container');
-            const leftBtn = document.getElementById('thumb-left-btn');
-            const rightBtn = document.getElementById('thumb-right-btn');
-            leftBtn.disabled = container.scrollLeft <= 0;
-            rightBtn.disabled = container.scrollLeft + container.clientWidth >= container.scrollWidth - 1;
-        }
-
-        function hideButtonNavigation() {
-            const leftBtn = document.getElementById('thumb-left-btn');
-            const rightBtn = document.getElementById('thumb-right-btn');
-            leftBtn.style.display = 'none';
-            rightBtn.style.display = 'none';
-        }
-
-        document.getElementById('thumbnail-container').addEventListener('scroll', updateNavButtons);
-        window.addEventListener('load', updateNavButtons);
     </script>
-
 </body>
 
 </html>
