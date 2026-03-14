@@ -11,10 +11,10 @@ class ClientController extends Controller
     public static function home()
     {
         $produkUnggulan = Product::whereIn('name', [
-            'kacamata photocromic ptc-02', 
+            'kacamata photocromic ptc-02',
             'kacamata hitam gelap',
             'kacamata bening anti radiasi leopard model bulat',
-            'kaos kaki panjang oldskull sebetis' 
+            'kaos kaki panjang oldskull sebetis'
         ])->get();
 
         $allCategories = Category::all();
@@ -28,14 +28,15 @@ class ClientController extends Controller
 
     public function catalog(Request $request)
     {
-        $query = $request->input('query'); 
+        $query = $request->input('query');
 
         $allProduct = Product::with('category')
+            ->where('is_display', 1)
             ->when($query, function ($queryBuilder) use ($query) {
                 $queryBuilder->where('name', 'LIKE', '%' . $query . '%');
             })
             ->paginate(12);
-        
+
         $categories = Category::with('products')->get();
 
         $title = 'Katalog Produk | LF Store';
@@ -51,10 +52,12 @@ class ClientController extends Controller
         // Cari produk berdasarkan slug
         $data = Product::with(['images', 'category'])
             ->where('slug', $slug)
+            ->where('is_display', 1)
             ->firstOrFail();
 
         // Produk rekomendasi (kecuali produk sekarang)
         $suggestedProduct = Product::where('slug', '!=', $slug)
+            ->where('is_display', 1)
             ->where(function ($query) use ($data) {
                 $query->where('category_id', $data->category_id)
                     ->orWhere('name', 'like', '%' . $data->name . '%');
@@ -77,7 +80,7 @@ class ClientController extends Controller
 
     public function categoryProduct(Request $request, $slug)
     {
-        $query = $request->input('query'); 
+        $query = $request->input('query');
 
         $category = Category::where('slug', $slug)->first();
 
@@ -87,6 +90,7 @@ class ClientController extends Controller
 
         // Ambil produk berdasarkan category_id
         $allProductbyCategory = Product::where('category_id', $category->id)
+            ->where('is_display', 1)
             ->when($query, function ($q) use ($query) {
                 $q->where('name', 'LIKE', "%{$query}%");
             })

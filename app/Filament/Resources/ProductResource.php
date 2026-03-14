@@ -42,12 +42,8 @@ class ProductResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->unique(Product::class, 'name', fn($record) => $record),
-                Forms\Components\Radio::make('is_display')
+                Forms\Components\Toggle::make('is_display')
                     ->label('Display in Catalog')
-                    ->options([
-                        '1' => 'Yes',
-                        '0' => 'No'
-                    ])
                     ->required(),
                 Forms\Components\TextInput::make('price')->numeric()->required(),
                 Forms\Components\TextInput::make('stock')->numeric()->required(),
