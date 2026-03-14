@@ -24,7 +24,8 @@ class Product extends Model
         'price',
         'stock',
         'is_available',
-        'image_thumbnail'
+        'image_thumbnail',
+        'is_display'
     ];
 
     public function images(): HasMany

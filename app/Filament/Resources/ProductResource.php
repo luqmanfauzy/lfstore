@@ -39,12 +39,19 @@ class ProductResource extends Resource
                     ->relationship('category', 'category_name')
                     ->required()
                     ->native(false),
-                TextInput::make('name')
+                Forms\Components\TextInput::make('name')
                     ->required()
                     ->unique(Product::class, 'name', fn($record) => $record),
+                Forms\Components\Radio::make('is_display')
+                    ->label('Display in Catalog')
+                    ->options([
+                        '1' => 'Yes',
+                        '0' => 'No'
+                    ])
+                    ->required(),
                 Forms\Components\TextInput::make('price')->numeric()->required(),
                 Forms\Components\TextInput::make('stock')->numeric()->required(),
-                RichEditor::make('description')
+                Forms\Components\RichEditor::make('description')
                     ->required()
                     ->columnSpan(['sm' => 2])
                     ->disableToolbarButtons([
@@ -128,6 +135,8 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\ToggleColumn::make('is_display')
+                    ->label('Display in Catalog'),
                 Tables\Columns\TextColumn::make('category.category_name')
                     ->searchable()
                     ->sortable(),
