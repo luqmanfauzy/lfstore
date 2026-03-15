@@ -10,3 +10,5 @@ List fitur
 - redesign catalog product
 - tambah kolom isDisplay (apakah produk ditampilkan di katalog atau tidak)👌
 - pastikan semua udh pakai slug utk routing
+- buat fitur generate invoice
+- buat judul produk bisa di copy

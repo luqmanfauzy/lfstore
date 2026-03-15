@@ -283,9 +283,18 @@
                         {{ $data->category->category_name }}
                     </a>
 
-                    <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight mb-4 break-words">
-                        {{ $data->name }}
-                    </h1>
+                    <div x-data="{ copied: false }" class="flex items-start justify-between gap-4 mb-4">
+                        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight break-words">
+                            {{ $data->name }}
+                        </h1>
+                        <button 
+                            @click="navigator.clipboard.writeText('{{ $data->name }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                            class="flex-shrink-0 p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                            title="Salin Nama Produk"
+                        >
+                            <i class='bx transition-all duration-200' :class="copied ? 'bx-check text-green-500' : 'bx-copy-alt'"></i>
+                        </button>
+                    </div>
 
                     <div class="flex items-end gap-3 mb-8">
                         <span class="text-3xl font-extrabold tracking-tight text-gray-900">
