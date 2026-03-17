@@ -12,7 +12,14 @@
     {{-- Open Graph --}}
     <meta property="og:title" content="{{ $title }}">
     <meta property="og:description" content="{{ $description }}">
-    <meta property="og:image" content="{{ asset('storage/' . $data->image_thumbnail) }}">
+    @php
+        $ogPath = $data->image_thumbnail ? 'storage/' . $data->image_thumbnail : null;
+        $ogExists = $ogPath && file_exists(public_path($ogPath));
+    @endphp
+
+    <meta property="og:image" content="{{ $ogExists
+    ? asset($ogPath)
+    : asset('assets/images/no-image-available.png') }}">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta name="twitter:card" content="summary_large_image">
 
@@ -225,7 +232,7 @@
                     <!-- Main Featured Image -->
                     <div id="mainImageContainer"
                         class="relative group w-full aspect-square md:aspect-[4/3] lg:aspect-square overflow-hidden rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center p-4">
-                        
+
                         @if($imagesCount > 1)
                             <!-- Left Arrow (Main) -->
                             <button type="button"
@@ -235,9 +242,15 @@
                             </button>
                         @endif
 
-                        <img id="currentImage" src="{{ asset('storage/' . $data->image_thumbnail) }}"
-                            alt="{{ $data->name }}"
-                            class="object-cover w-full h-full rounded-xl mix-blend-multiply transition-opacity duration-300">
+                        @php
+                            $mainPath = $data->image_thumbnail ? 'storage/' . $data->image_thumbnail : null;
+                            $mainExists = $mainPath && file_exists(public_path($mainPath));
+                        @endphp
+
+                        <img id="currentImage"
+                            src="{{ $mainExists ? asset($mainPath) : asset('assets/images/no-image-available.png') }}"
+                            class="object-cover w-full h-full rounded-xl mix-blend-multiply transition-opacity duration-300"
+                            onerror="this.src='{{ asset('assets/images/no-image-available.png') }}'; this.onerror=null;">
 
                         @if($imagesCount > 1)
                             <!-- Right Arrow (Main) -->
@@ -255,18 +268,29 @@
                             <div id="thumbnail-container"
                                 class="flex gap-3 overflow-x-auto pb-2 scroll-smooth scrollbar-hide px-1">
                                 <!-- Main Thumb -->
-                                <button onclick="changeImage('{{ asset('storage/' . $data->image_thumbnail) }}', this, 0)"
-                                    data-index="0"
-                                    class="thumbnail-btn flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 border-blue-600 bg-gray-50 p-1 transition-colors">
-                                    <img src="{{ asset('storage/' . $data->image_thumbnail) }}"
+                                @php
+                                    $thumbExists = $mainPath && file_exists(public_path($mainPath));
+                                @endphp
+
+                                <button
+                                    onclick="changeImage('{{ $thumbExists ? asset($mainPath) : asset('assets/images/no-image-available.png') }}', this, 0)"
+                                    class="thumbnail-btn ...">
+
+                                    <img src="{{ $thumbExists ? asset($mainPath) : asset('assets/images/no-image-available.png') }}"
                                         class="w-full h-full object-cover rounded-lg mix-blend-multiply">
                                 </button>
                                 <!-- Gallery Thumbs -->
                                 @foreach ($data->images as $index => $image)
-                                    <button onclick="changeImage('{{ asset('storage/' . $image->image_path) }}', this, {{ $index + 1 }})"
-                                        data-index="{{ $index + 1 }}"
-                                        class="thumbnail-btn flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 border-transparent hover:border-blue-300 bg-gray-50 p-1 transition-colors">
-                                        <img src="{{ asset('storage/' . $image->image_path) }}"
+                                    @php
+                                        $imgPath = $image->image_path ? 'storage/' . $image->image_path : null;
+                                        $imgExists = $imgPath && file_exists(public_path($imgPath));
+                                    @endphp
+
+                                    <button
+                                        onclick="changeImage('{{ $imgExists ? asset($imgPath) : asset('assets/images/no-image-available.png') }}', this, {{ $index + 1 }})"
+                                        class="thumbnail-btn ...">
+
+                                        <img src="{{ $imgExists ? asset($imgPath) : asset('assets/images/no-image-available.png') }}"
                                             class="w-full h-full object-cover rounded-lg mix-blend-multiply">
                                     </button>
                                 @endforeach
@@ -287,12 +311,12 @@
                         <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight break-words">
                             {{ $data->name }}
                         </h1>
-                        <button 
+                        <button
                             @click="navigator.clipboard.writeText('{{ $data->name }}'); copied = true; setTimeout(() => copied = false, 2000)"
                             class="flex-shrink-0 p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
-                            title="Salin Nama Produk"
-                        >
-                            <i class='bx transition-all duration-200' :class="copied ? 'bx-check text-green-500' : 'bx-copy-alt'"></i>
+                            title="Salin Nama Produk">
+                            <i class='bx transition-all duration-200'
+                                :class="copied ? 'bx-check text-green-500' : 'bx-copy-alt'"></i>
                         </button>
                     </div>
 
@@ -349,22 +373,44 @@
         <!-- Suggested Products Section -->
         @if ($suggestedProduct->isNotEmpty())
             <div class="mt-24 mb-8">
-                <h2 class="text-2xl font-bold text-gray-900 tracking-tight mb-8">Anda Mungkin Juga Suka</h2>
+                <h2 class="text-2xl font-bold text-gray-900 tracking-tight mb-8">
+                    Anda Mungkin Juga Suka
+                </h2>
 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
                     @foreach ($suggestedProduct as $suggested)
+                        @php
+                            $sPath = $suggested->image_thumbnail
+                                ? 'storage/' . $suggested->image_thumbnail
+                                : null;
+
+                            $sExists = $sPath && file_exists(public_path($sPath));
+                        @endphp
+
                         <div
                             class="group flex flex-col bg-white rounded-3xl border border-gray-100/60 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-blue-100 transition-all duration-300">
+
                             <a href="{{ route('detail', $suggested->slug) }}"
                                 class="relative aspect-square overflow-hidden bg-gray-50/50 pt-2 px-2 flex items-center justify-center">
-                                <img src="{{ asset('storage/' . $suggested->image_thumbnail) }}" alt="{{ $suggested->name }}"
-                                    class="object-cover w-full h-full rounded-2xl group-hover:scale-105 transition-transform duration-700 ease-in-out mix-blend-multiply">
+
+                                @if($sExists)
+                                    <img src="{{ asset($sPath) }}" alt="{{ $suggested->name }}"
+                                        class="object-cover w-full h-full rounded-2xl group-hover:scale-105 transition-transform duration-700 ease-in-out mix-blend-multiply">
+                                @else
+                                    <img src="{{ asset('assets/images/no-image-available.png') }}" alt="No Image"
+                                        class="object-cover w-full h-full rounded-2xl opacity-80">
+                                @endif
+
                             </a>
+
                             <div class="p-4 sm:p-5 flex flex-col flex-1">
                                 <h3
                                     class="text-sm sm:text-[15px] font-medium text-gray-900 line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors mb-2">
-                                    <a href="{{ route('detail', $suggested->slug) }}">{{ $suggested->name }}</a>
+                                    <a href="{{ route('detail', $suggested->slug) }}">
+                                        {{ $suggested->name }}
+                                    </a>
                                 </h3>
+
                                 <div class="mt-auto pt-3 flex items-center justify-between border-t border-gray-50">
                                     <p class="text-base sm:text-[17px] font-bold text-gray-900 tracking-tight">
                                         Rp{{ number_format($suggested->price, 0, ',', '.') }}
@@ -467,7 +513,7 @@
         function updateMainArrows() {
             const leftBtn = document.getElementById('main-left-btn');
             const rightBtn = document.getElementById('main-right-btn');
-            
+
             if (leftBtn && rightBtn) {
                 if (totalImages <= 1) {
                     leftBtn.style.display = 'none';
@@ -495,17 +541,17 @@
             if (thumbnails.length === 0) {
                 thumbnails = document.querySelectorAll('.thumbnail-btn');
             }
-            
+
             thumbnails.forEach(btn => {
                 btn.classList.remove('border-blue-600');
                 btn.classList.add('border-transparent');
             });
             btnElement.classList.add('border-blue-600');
             btnElement.classList.remove('border-transparent');
-            
+
             // Scroll thumbnail into view
             btnElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            
+
             updateMainArrows();
         }
 
