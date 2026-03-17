@@ -12,4 +12,4 @@ List fitur
 - pastikan semua udh pakai slug utk routing👌
 - buat fitur generate invoice
 - buat judul produk bisa di copy👌
-- disolay image jika unavailable
+- display image jika unavailable👌
