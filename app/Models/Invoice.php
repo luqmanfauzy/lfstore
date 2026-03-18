@@ -14,6 +14,8 @@ class Invoice extends Model
         'date',
         'customer_name',
         'total_purchases',
+        'shipping_cost',
+        'payment_method',
     ];
 
     public function items()

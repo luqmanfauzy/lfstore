@@ -10,28 +10,37 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
 class InvoiceResource extends Resource
 {
     protected static ?string $model = Invoice::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationGroup = 'Transactions';
-    
+
+    private static function recalculateTotal(callable $get, callable $set): void
+    {
+        $items = $get('items') ?? $get('../../items');
+        $itemsTotal = is_array($items) ? collect($items)->sum('subtotal') : 0;
+        $shipping = floatval($get('shipping_cost') ?? $get('../../shipping_cost') ?? 0);
+        $total = $itemsTotal + $shipping;
+
+        // Try setting at form root level
+        try {
+            $set('total_purchases', $total);
+        } catch (\Throwable $e) {
+        }
+        try {
+            $set('../../total_purchases', $total);
+        } catch (\Throwable $e) {
+        }
+    }
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\Section::make('Invoice Details')
                     ->schema([
-                        Forms\Components\TextInput::make('invoice')
-                            ->label('Invoice Number')
-                            ->disabled()
-                            ->dehydrated()
-                            ->unique(Invoice::class, 'invoice', ignoreRecord: true)
-                            ->visibleOn('edit'),
-                            
                         Forms\Components\DatePicker::make('date')
                             ->required()
                             ->default(now()),
@@ -40,8 +49,9 @@ class InvoiceResource extends Resource
                             ->required(),
 
                         Forms\Components\TextInput::make('total_purchases')
+                            ->label('Total')
                             ->numeric()
-                            ->disabled()
+                            ->readOnly()
                             ->required()
                             ->default(0),
                     ])->columns(2),
@@ -61,21 +71,17 @@ class InvoiceResource extends Resource
                                             ->pluck('name', 'id')
                                             ->toArray()
                                     )
-                                    ->getOptionLabelUsing(fn ($value): ?string => Product::find($value)?->name)
+                                    ->getOptionLabelUsing(fn($value): ?string => Product::find($value)?->name)
                                     ->reactive()
                                     ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                         $product = Product::find($state);
                                         $price = $product?->price ?? 0;
                                         $set('price', $price);
-                                        
+
                                         $qty = floatval($get('qty') ?? 1);
                                         $set('subtotal', $price * $qty);
 
-                                        $items = $get('../../items');
-                                        if (is_array($items)) {
-                                            $total = collect($items)->sum('subtotal');
-                                            $set('../../total_purchases', $total);
-                                        }
+                                        static::recalculateTotal($get, $set);
                                     })
                                     ->required(),
 
@@ -88,17 +94,13 @@ class InvoiceResource extends Resource
                                         $subtotal = floatval($state) * $price;
                                         $set('subtotal', $subtotal);
 
-                                        $items = $get('../../items');
-                                        if (is_array($items)) {
-                                            $total = collect($items)->sum('subtotal');
-                                            $set('../../total_purchases', $total);
-                                        }
+                                        static::recalculateTotal($get, $set);
                                     })
                                     ->required(),
 
                                 Forms\Components\TextInput::make('price')
                                     ->numeric()
-                                    ->disabled()
+                                    ->readOnly()
                                     ->required()
                                     ->reactive()
                                     ->afterStateUpdated(function ($state, callable $set, callable $get) {
@@ -106,29 +108,55 @@ class InvoiceResource extends Resource
                                         $subtotal = floatval($state) * $qty;
                                         $set('subtotal', $subtotal);
 
-                                        $items = $get('../../items');
-                                        if (is_array($items)) {
-                                            $total = collect($items)->sum('subtotal');
-                                            $set('../../total_purchases', $total);
-                                        }
+                                        static::recalculateTotal($get, $set);
                                     }),
 
                                 Forms\Components\TextInput::make('subtotal')
                                     ->numeric()
-                                    ->disabled()
+                                    ->readOnly()
                                     ->required(),
                             ])
                             ->afterStateUpdated(function (callable $get, callable $set) {
-                                $items = $get('items');
-                                if (is_array($items)) {
-                                    $total = collect($items)->sum('subtotal');
-                                    $set('total_purchases', $total);
-                                }
+                                static::recalculateTotal($get, $set);
                             })
                             ->columns(4)
                             ->reactive()
                             ->required(),
                     ]),
+
+                Forms\Components\Section::make('Pengiriman & Pembayaran')
+                    ->schema([
+                        Forms\Components\Toggle::make('has_shipping')
+                            ->label('Tambah Ongkir')
+                            ->default(false)
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                if (!$state) {
+                                    $set('shipping_cost', 0);
+                                }
+                                static::recalculateTotal($get, $set);
+                            })
+                            ->dehydrated(false),
+
+                        Forms\Components\TextInput::make('shipping_cost')
+                            ->label('Ongkir (Rp)')
+                            ->numeric()
+                            ->default(0)
+                            ->reactive()
+                            ->visible(fn(callable $get) => $get('has_shipping') == true)
+                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                static::recalculateTotal($get, $set);
+                            }),
+
+                        Forms\Components\Radio::make('payment_method')
+                            ->label('Metode Pembayaran')
+                            ->options([
+                                'cod' => 'COD (Cash on Delivery)',
+                                'transfer' => 'Transfer Bank',
+                            ])
+                            ->required()
+                            ->default('cod'),
+                    ])->columns(2),
             ]);
     }
 
@@ -136,7 +164,9 @@ class InvoiceResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('invoice')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('invoice')
+                    ->sortable()
+                    ->searchable(),
 
                 Tables\Columns\TextColumn::make('date')
                     ->date('d M Y')
@@ -146,15 +176,16 @@ class InvoiceResource extends Resource
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('total_purchases')
-                    ->money('IDR', true),
+                    ->formatStateUsing(fn($state) => 'Rp ' . number_format($state, 0, ',', '.')),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
                 Tables\Actions\Action::make('download')
-                    ->label('Download PDF')
+                    ->label('Download')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->action(function (Invoice $record) {
                         $html = view('invoice', [
+                            'invoiceNumber' => $record->invoice,
                             'date' => $record->date,
                             'customer' => $record->customer_name,
                             'items' => $record->items->map(function ($item) {
@@ -166,12 +197,19 @@ class InvoiceResource extends Resource
                                 ];
                             }),
                             'total' => $record->total_purchases,
+                            'shippingCost' => $record->shipping_cost ?? 0,
+                            'paymentMethod' => $record->payment_method ?? 'cod',
                         ])->render();
 
                         $filename = 'invoice-' . $record->invoice . '.png';
                         $path = storage_path("app/public/$filename");
 
-                        \Spatie\Browsershot\Browsershot::html($html)->save($path);
+                        \Spatie\Browsershot\Browsershot::html($html)
+                            ->waitUntilNetworkIdle()
+                            ->windowSize(860, 100)  
+                            ->fullPage()             
+                            ->setScreenshotType('jpeg', 90)
+                            ->save($path);
 
                         return response()->download($path)->deleteFileAfterSend(true);
                     }),
@@ -181,13 +219,13 @@ class InvoiceResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('date', 'desc');
+            ->defaultSort('invoice', 'desc');
     }
 
     public static function getRelations(): array
     {
         return [
-            // Removed InvoiceItemsRelationManager as it's handled via repeater
+            //
         ];
     }
 
@@ -196,7 +234,6 @@ class InvoiceResource extends Resource
         return [
             'index' => Pages\ListInvoices::route('/'),
             'create' => Pages\CreateInvoice::route('/create'),
-            'edit' => Pages\EditInvoice::route('/{record}/edit'),
         ];
     }
 }
