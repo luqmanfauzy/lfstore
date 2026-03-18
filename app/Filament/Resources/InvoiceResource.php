@@ -14,6 +14,7 @@ use Filament\Tables\Table;
 class InvoiceResource extends Resource
 {
     protected static ?string $model = Invoice::class;
+    protected static ?int $navigationSort = 4;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
@@ -22,15 +23,15 @@ class InvoiceResource extends Resource
         $items = $get('items') ?? $get('../../items');
         $itemsTotal = is_array($items) ? collect($items)->sum('subtotal') : 0;
         $shipping = floatval($get('shipping_cost') ?? $get('../../shipping_cost') ?? 0);
-        $total = $itemsTotal + $shipping;
+        $discount = floatval($get('discount_nominal') ?? $get('../../discount_nominal') ?? 0);
+        $total = $itemsTotal + $shipping - $discount;
 
-        // Try setting at form root level
         try {
-            $set('total_purchases', $total);
+            $set('total_purchases', max(0, $total));
         } catch (\Throwable $e) {
         }
         try {
-            $set('../../total_purchases', $total);
+            $set('../../total_purchases', max(0, $total));
         } catch (\Throwable $e) {
         }
     }
@@ -157,6 +158,38 @@ class InvoiceResource extends Resource
                             ->required()
                             ->default('cod'),
                     ])->columns(2),
+
+                Forms\Components\Section::make('Diskon')
+                    ->schema([
+                        Forms\Components\Toggle::make('has_discount')
+                            ->label('Tambah Diskon')
+                            ->default(false)
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                if (!$state) {
+                                    $set('discount_name', null);
+                                    $set('discount_nominal', 0);
+                                }
+                                static::recalculateTotal($get, $set);
+                            })
+                            ->dehydrated(false), 
+
+                        Forms\Components\TextInput::make('discount_name')
+                            ->label('Nama Diskon')
+                            ->placeholder('contoh: Promo Lebaran, Member, dll')
+                            ->nullable()
+                            ->visible(fn(callable $get) => $get('has_discount') == true),
+
+                        Forms\Components\TextInput::make('discount_nominal')
+                            ->label('Nominal Diskon (Rp)')
+                            ->numeric()
+                            ->default(0)
+                            ->reactive()
+                            ->visible(fn(callable $get) => $get('has_discount') == true)
+                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                static::recalculateTotal($get, $set);
+                            }),
+                    ])->columns(2),
             ]);
     }
 
@@ -199,15 +232,17 @@ class InvoiceResource extends Resource
                             'total' => $record->total_purchases,
                             'shippingCost' => $record->shipping_cost ?? 0,
                             'paymentMethod' => $record->payment_method ?? 'cod',
+                            'discountName' => $record->discount_name,
+                            'discountNominal' => $record->discount_nominal ?? 0,
                         ])->render();
 
-                        $filename = 'invoice-' . $record->invoice . '.png';
+                        $filename = 'invoice-' . $record->invoice . '.jpg';
                         $path = storage_path("app/public/$filename");
 
                         \Spatie\Browsershot\Browsershot::html($html)
                             ->waitUntilNetworkIdle()
-                            ->windowSize(860, 100)  
-                            ->fullPage()             
+                            ->windowSize(860, 100)
+                            ->fullPage()
                             ->setScreenshotType('jpeg', 90)
                             ->save($path);
 
@@ -224,9 +259,7 @@ class InvoiceResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

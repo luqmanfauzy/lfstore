@@ -21,7 +21,6 @@
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
-
         body {
             font-family: 'Poppins', sans-serif;
             width: 860px;
@@ -89,39 +88,55 @@
             </thead>
             <tbody>
                 @foreach($items as $item)
-                <tr class="border-b border-gray-100">
-                    <td class="py-4 px-4 text-sm font-semibold text-gray-900 align-top">{{ $item['name'] }}</td>
-                    <td class="py-4 px-4 text-sm text-gray-600 text-right align-top">
-                        Rp{{ number_format($item['price'], 0, ',', '.') }}
-                    </td>
-                    <td class="py-4 px-4 text-sm font-bold text-gray-900 text-center align-top">
-                        {{ (int)$item['qty'] }}
-                    </td>
-                    <td class="py-4 px-4 text-sm font-bold text-gray-900 text-right align-top">
-                        Rp{{ number_format($item['subtotal'], 0, ',', '.') }}
-                    </td>
-                </tr>
+                    <tr class="border-b border-gray-100">
+                        <td class="py-4 px-4 text-sm font-semibold text-gray-900 align-top">{{ $item['name'] }}</td>
+                        <td class="py-4 px-4 text-sm text-gray-600 text-right align-top">
+                            Rp{{ number_format($item['price'], 0, ',', '.') }}
+                        </td>
+                        <td class="py-4 px-4 text-sm font-bold text-gray-900 text-center align-top">
+                            {{ (int)$item['qty'] }}
+                        </td>
+                        <td class="py-4 px-4 text-sm font-bold text-gray-900 text-right align-top">
+                            Rp{{ number_format($item['subtotal'], 0, ',', '.') }}
+                        </td>
+                    </tr>
                 @endforeach
             </tbody>
         </table>
 
-        {{-- Subtotal + Shipping --}}
+        {{-- Subtotal + Ongkir + Diskon --}}
         <div class="border-t border-gray-200 pt-4 mt-2">
+
+            {{-- Subtotal --}}
             <div class="flex justify-between items-center py-2">
                 <span class="text-sm text-gray-500 font-medium">Subtotal</span>
-                <span class="text-sm font-semibold text-blue-600">
+                <span class="text-sm font-semibold text-gray-700">
                     Rp{{ number_format(collect($items)->sum('subtotal'), 0, ',', '.') }}
                 </span>
             </div>
 
+            {{-- Ongkir --}}
             @if(isset($shippingCost) && $shippingCost > 0)
-            <div class="flex justify-between items-center py-2">
-                <span class="text-sm text-gray-500 font-medium">Ongkos Kirim</span>
-                <span class="text-sm font-semibold text-blue-600">
-                    Rp{{ number_format($shippingCost, 0, ',', '.') }}
-                </span>
-            </div>
+                <div class="flex justify-between items-center py-2">
+                    <span class="text-sm text-gray-500 font-medium">Ongkos Kirim</span>
+                    <span class="text-sm font-semibold text-gray-700">
+                        Rp{{ number_format($shippingCost, 0, ',', '.') }}
+                    </span>
+                </div>
             @endif
+
+            {{-- Diskon --}}
+            @if(isset($discountNominal) && $discountNominal > 0)
+                <div class="flex justify-between items-center py-2">
+                    <span class="text-sm text-gray-500 font-medium">
+                        Diskon{{ isset($discountName) && $discountName ? ' (' . $discountName . ')' : '' }}
+                    </span>
+                    <span class="text-sm font-semibold text-red-500">
+                        - Rp{{ number_format($discountNominal, 0, ',', '.') }}
+                    </span>
+                </div>
+            @endif
+
         </div>
 
         {{-- Total Akhir --}}

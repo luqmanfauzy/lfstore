@@ -16,6 +16,8 @@ class Invoice extends Model
         'total_purchases',
         'shipping_cost',
         'payment_method',
+        'discount_name',
+        'discount_nominal',
     ];
 
     public function items()
