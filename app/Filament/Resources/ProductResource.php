@@ -68,7 +68,7 @@ class ProductResource extends Resource
                     ->imageEditor()
                     ->directory('products/thumbnails')
                     ->disk('public')
-                    ->required()
+                    // ->required()
                     ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
                         $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '.webp';
                         $path = 'products/thumbnails/' . $filename;
@@ -101,7 +101,7 @@ class ProductResource extends Resource
                     ->panelLayout('grid')
                     ->directory('products/images')
                     ->disk('public')
-                    ->required()
+                    // ->required()
                     ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
                         $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '.webp';
                         $path = 'products/images/' . $filename;
