@@ -14,6 +14,9 @@ export default {
         'custom-dark-gray': '#4F4F4F',
         'custom-black': '#212020',
       },
+      fontFamily: {
+        poppins: ['Poppins', 'sans-serif'],
+      },
     },
   },
   plugins: [],
