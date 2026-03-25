@@ -16,7 +16,7 @@ class ClientController extends Controller
         $keywords = 'kacamata, kacamata hitam, kacamata bening, kacamata photocromic, kaos kaki panjang, aksesoris kacamata';
         $ogTitle = 'LF Store | Aksesoris Kacamata dan Kaos Kaki';
 
-        return view('Home', compact('allCategories', 'description', 'keywords', 'ogTitle'));
+        return view('home', compact('allCategories', 'description', 'keywords', 'ogTitle'));
     }
 
     public function catalog(Request $request)
