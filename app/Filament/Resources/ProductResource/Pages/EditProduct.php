@@ -41,6 +41,11 @@ class EditProduct extends EditRecord
             
             // Delete removed images
             if (!empty($pathsToDelete)) {
+                // Delete actual files from storage
+                foreach ($pathsToDelete as $path) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
+                }
+
                 ProductImage::where('product_id', $record->id)
                     ->whereIn('image_path', $pathsToDelete)
                     ->delete();

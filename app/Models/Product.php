@@ -64,6 +64,14 @@ class Product extends Model
 
                 $product->slug = $count ? "{$slug}-{$count}" : $slug;
             }
+
+            // Hapus gambar thumbnail lama saat diganti dengan yang baru
+            if ($product->isDirty('image_thumbnail')) {
+                $oldImage = $product->getOriginal('image_thumbnail');
+                if ($oldImage) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($oldImage);
+                }
+            }
         });
     }
 

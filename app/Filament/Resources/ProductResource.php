@@ -45,6 +45,7 @@ class ProductResource extends Resource
                     ->unique(Product::class, 'name', fn($record) => $record),
                 Forms\Components\Toggle::make('is_display')
                     ->label('Display in Catalog')
+                    ->default(true)
                     ->required(),
                 Forms\Components\TextInput::make('price')->numeric()->required(),
                 Forms\Components\TextInput::make('stock')->numeric()->required(),
