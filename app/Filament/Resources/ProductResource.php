@@ -69,6 +69,7 @@ class ProductResource extends Resource
                     ->imageEditor()
                     ->directory('products/thumbnails')
                     ->disk('public')
+                    ->getUploadedFileUrlUsing(fn ($file) => \Storage::disk('public')->url($file))
                     // ->required()
                     ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
                         $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '.webp';
@@ -102,6 +103,7 @@ class ProductResource extends Resource
                     ->panelLayout('grid')
                     ->directory('products/images')
                     ->disk('public')
+                    ->getUploadedFileUrlUsing(fn ($file) => \Storage::disk('public')->url($file))
                     // ->required()
                     ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
                         $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '.webp';
