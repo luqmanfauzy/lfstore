@@ -223,7 +223,7 @@
                                                     >
                                                         @foreach ($groupedActions as $action)
                                                             <x-filament::button
-                                                                x-tooltip="{ content: @js($action['label']), theme: $store.theme, }"
+                                                                x-tooltip='{ content: @js($action["label"]), theme: $store.theme, }'
                                                                 x-on:click.stop.prevent="{{ $action['alpineClickHandler'] }}"
                                                                 color="gray"
                                                                 grouped
@@ -255,7 +255,7 @@
                                                         >
                                                             @foreach ($ratiosChunk as $label => $ratio)
                                                                 <x-filament::button
-                                                                    x-tooltip="{ content: @js(__('filament-forms::components.file_upload.editor.actions.set_aspect_ratio.label', ['ratio' => $label])), theme: $store.theme, }"
+                                                                    x-tooltip='{ content: @js(__("filament-forms::components.file_upload.editor.actions.set_aspect_ratio.label", ["ratio" => $label])), theme: $store.theme, }'
                                                                     x-on:click.stop.prevent="currentRatio = '{{ $label }}'; editor.setAspectRatio({{ $ratio }})"
                                                                     color="gray"
                                                                     x-bind:class="{'!bg-gray-50 dark:!bg-gray-700': currentRatio === '{{ $label }}'}"
