@@ -94,7 +94,7 @@ class ProductResource extends Resource
                         Storage::disk('public')->put($path, $binary);
                         
                         // Hapus original foto (.jpg/.png) yang tersimpan di temporary storage Livewire agar tidak menuh-menuhin storage
-                        $file->delete();
+                        //$file->delete();
                         
                         return $path; // path .webp disimpan ke DB
                     })
@@ -135,7 +135,7 @@ class ProductResource extends Resource
                         Storage::disk('public')->put($path, $binary);
                         
                         // Hapus original foto temporary Livewire
-                        $file->delete();
+                        //$file->delete();
                         
                         return $path;
                     })
