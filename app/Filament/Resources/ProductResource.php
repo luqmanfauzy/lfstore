@@ -69,7 +69,7 @@ class ProductResource extends Resource
                     ->imageEditor()
                     ->directory('products/thumbnails')
                     ->disk('public')
-                    ->getUploadedFileUrlUsing(fn ($file) => \Storage::disk('public')->url($file))
+                    ->visibility('public')
                     // ->required()
                     ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
                         $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '.webp';
@@ -92,7 +92,17 @@ class ProductResource extends Resource
                         imagedestroy($img);
 
                         Storage::disk('public')->put($path, $binary);
+                        
+                        // Hapus original foto (.jpg/.png) yang tersimpan di temporary storage Livewire agar tidak menuh-menuhin storage
+                        $file->delete();
+                        
                         return $path; // path .webp disimpan ke DB
+                    })
+                    ->deleteUploadedFileUsing(function ($file) {
+                        // Hapus file .webp lama ketika foto dihapus atau diganti di form
+                        if ($file) {
+                            Storage::disk('public')->delete($file);
+                        }
                     }),
 
                 Forms\Components\FileUpload::make('images')
@@ -103,7 +113,7 @@ class ProductResource extends Resource
                     ->panelLayout('grid')
                     ->directory('products/images')
                     ->disk('public')
-                    ->getUploadedFileUrlUsing(fn ($file) => \Storage::disk('public')->url($file))
+                    ->visibility('public')
                     // ->required()
                     ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
                         $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '.webp';
@@ -123,7 +133,17 @@ class ProductResource extends Resource
                         imagedestroy($img);
 
                         Storage::disk('public')->put($path, $binary);
+                        
+                        // Hapus original foto temporary Livewire
+                        $file->delete();
+                        
                         return $path;
+                    })
+                    ->deleteUploadedFileUsing(function ($file) {
+                        // Hapus file .webp lama ketika foto dihapus/diganti
+                        if ($file) {
+                            Storage::disk('public')->delete($file);
+                        }
                     })
             ]);
     }
