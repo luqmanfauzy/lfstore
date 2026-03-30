@@ -2,26 +2,15 @@
 
 namespace App\Filament\Resources;
 
-use Closure;
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Product;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
-use Illuminate\Support\Str;
-use App\Models\ProductImage;
 use Filament\Resources\Resource;
-use Filament\Forms\Components\Select;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\RichEditor;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Tables\Filters\TernaryFilter;
 use App\Filament\Resources\ProductResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\ProductResource\RelationManagers;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Illuminate\Support\Facades\Storage;
 
@@ -67,6 +56,7 @@ class ProductResource extends Resource
                     ->label('Thumbnail')
                     ->image()
                     ->imageEditor()
+                    ->maxSize(102400) // 100MB limit for Filament (bypass)
                     ->directory('products/thumbnails')
                     ->disk('public')
                     ->visibility('public')
@@ -110,6 +100,7 @@ class ProductResource extends Resource
                     ->multiple()
                     ->image()
                     ->imageEditor()
+                    ->maxSize(102400) // 100MB limit for Filament (bypass)
                     ->panelLayout('grid')
                     ->directory('products/images')
                     ->disk('public')
@@ -154,7 +145,10 @@ class ProductResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->copyable()
+                    ->copyMessage('Nama produk disalin')
+                    ->copyMessageDuration(1500),
                 Tables\Columns\ToggleColumn::make('is_display')
                     ->label('Display in Catalog'),
                 Tables\Columns\TextColumn::make('category.category_name')

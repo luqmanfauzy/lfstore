@@ -856,7 +856,7 @@
                         Dari yang anti radiasi sampe photocromic—semua ada di sini!
                     </p>
                     <div class="hero-buttons">
-                        <a href="https://lfstore.online/catalog" class="btn-primary-custom text-decoration-none">
+                        <a href="{{ route('catalog') }}" class="btn-primary-custom text-decoration-none">
                             <i class='bx bx-shopping-bag'></i>
                             Lihat Koleksi
                         </a>
