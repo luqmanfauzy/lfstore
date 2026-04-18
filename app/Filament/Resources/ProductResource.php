@@ -11,8 +11,6 @@ use Filament\Resources\Resource;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProductResource\Pages;
-use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
-use Illuminate\Support\Facades\Storage;
 
 class ProductResource extends Resource
 {
@@ -59,7 +57,6 @@ class ProductResource extends Resource
                     ->imageEditor()
                     ->imageEditorAspectRatios(['1:1'])
                     ->imageEditorEmptyFillColor('#FFFFFF')
-                    ->optimize('webp')
                     ->imageResizeTargetWidth('1024')
                     ->imageResizeTargetHeight('1024')
                     ->maxSize(102400) // 100MB limit for Filament (bypass)
@@ -74,7 +71,6 @@ class ProductResource extends Resource
                     ->imageEditor()
                     ->imageEditorAspectRatios(['1:1'])
                     ->imageEditorEmptyFillColor('#FFFFFF')
-                    ->optimize('webp')
                     ->imageResizeTargetWidth('1024')
                     ->imageResizeTargetHeight('1024')
                     ->maxSize(102400) // 100MB limit for Filament (bypass)
