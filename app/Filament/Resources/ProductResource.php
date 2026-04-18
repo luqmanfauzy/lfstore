@@ -65,31 +65,36 @@ class ProductResource extends Resource
                     ->visibility('public')
                     // ->required()
                     ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
-                        $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '.webp';
-                        $path = 'products/thumbnails/' . $filename;
+                        try {
+                            $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '.webp';
+                            $path = 'products/thumbnails/' . $filename;
 
-                        // Baca gambar (format apa pun) lalu convert ke truecolor
-                        $img = imagecreatefromstring(file_get_contents($file->getRealPath()));
-                        if (!$img) {
-                            // fallback: simpan file asli kalau gagal dibaca
+                            $content = $file->get();
+                            if (!$content) {
+                                return $file->storeAs('products/thumbnails', $file->getClientOriginalName(), 'public');
+                            }
+
+                            $img = @imagecreatefromstring($content);
+                            if (!$img) {
+                                // fallback: simpan file asli kalau format tidak didukung (misal HEIC)
+                                return $file->storeAs('products/thumbnails', $file->getClientOriginalName(), 'public');
+                            }
+                            
+                            imagepalettetotruecolor($img);
+                            imagealphablending($img, true);
+                            imagesavealpha($img, true);
+
+                            ob_start();
+                            imagewebp($img, null, 75);
+                            $binary = ob_get_clean();
+                            imagedestroy($img);
+
+                            Storage::disk('public')->put($path, $binary);
+                            return $path;
+                        } catch (\Throwable $e) {
+                            // Fallback darurat jika ada error (membaca file, memori, format)
                             return $file->storeAs('products/thumbnails', $file->getClientOriginalName(), 'public');
                         }
-                        imagepalettetotruecolor($img);
-                        imagealphablending($img, true);
-                        imagesavealpha($img, true);
-
-                        // Encode ke WebP kualitas 75
-                        ob_start();
-                        imagewebp($img, null, 75);
-                        $binary = ob_get_clean();
-                        imagedestroy($img);
-
-                        Storage::disk('public')->put($path, $binary);
-                        
-                        // Hapus original foto (.jpg/.png) yang tersimpan di temporary storage Livewire agar tidak menuh-menuhin storage
-                        //$file->delete();
-                        
-                        return $path; // path .webp disimpan ke DB
                     })
                     ->deleteUploadedFileUsing(function ($file) {
                         // Hapus file .webp lama ketika foto dihapus atau diganti di form
@@ -112,28 +117,34 @@ class ProductResource extends Resource
                     ->visibility('public')
                     // ->required()
                     ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
-                        $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '.webp';
-                        $path = 'products/images/' . $filename;
+                        try {
+                            $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) . '.webp';
+                            $path = 'products/images/' . $filename;
 
-                        $img = imagecreatefromstring(file_get_contents($file->getRealPath()));
-                        if (!$img) {
+                            $content = $file->get();
+                            if (!$content) {
+                                return $file->storeAs('products/images', $file->getClientOriginalName(), 'public');
+                            }
+
+                            $img = @imagecreatefromstring($content);
+                            if (!$img) {
+                                return $file->storeAs('products/images', $file->getClientOriginalName(), 'public');
+                            }
+                            
+                            imagepalettetotruecolor($img);
+                            imagealphablending($img, true);
+                            imagesavealpha($img, true);
+
+                            ob_start();
+                            imagewebp($img, null, 75);
+                            $binary = ob_get_clean();
+                            imagedestroy($img);
+
+                            Storage::disk('public')->put($path, $binary);
+                            return $path;
+                        } catch (\Throwable $e) {
                             return $file->storeAs('products/images', $file->getClientOriginalName(), 'public');
                         }
-                        imagepalettetotruecolor($img);
-                        imagealphablending($img, true);
-                        imagesavealpha($img, true);
-
-                        ob_start();
-                        imagewebp($img, null, 75);
-                        $binary = ob_get_clean();
-                        imagedestroy($img);
-
-                        Storage::disk('public')->put($path, $binary);
-                        
-                        // Hapus original foto temporary Livewire
-                        //$file->delete();
-                        
-                        return $path;
                     })
                     ->deleteUploadedFileUsing(function ($file) {
                         // Hapus file .webp lama ketika foto dihapus/diganti
