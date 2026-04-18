@@ -1,16 +1,14 @@
-composer install
-copy .env.example .env
-php artisan key:generate
-php artisan storage:link
+#step by step deploy update code
 
-List fitur
-- update stok bisa langsung di table/view product👌
-- otomatis tiny/compress gambar ketika upload/edit👌
-- kompress image karena terlalu gede sizenya👌
-- redesign catalog product👌
-- tambah kolom isDisplay (apakah produk ditampilkan di katalog atau tidak)👌
-- pastikan semua udh pakai slug utk routing👌
-- buat fitur generate invoice
-- buat judul produk bisa di copy👌
-- display image jika unavailable👌
-- tes aja
+cd /var/www/lfstore
+
+git fetch origin
+git reset --hard origin/master
+
+composer install --no-dev --optimize-autoloader
+
+#php artisan migrate --force
+
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
