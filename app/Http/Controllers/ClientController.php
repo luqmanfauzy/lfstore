@@ -23,7 +23,7 @@ class ClientController extends Controller
     {
         $query = $request->input('query');
 
-        $allProduct = Product::with('category')
+        $allProduct = Product::with('categories')
             ->where('is_display', 1)
             ->when($query, function ($queryBuilder) use ($query) {
                 $queryBuilder->where('name', 'LIKE', '%' . $query . '%');
@@ -43,7 +43,7 @@ class ClientController extends Controller
     public function detailProduct($slug)
     {
         // Cari produk berdasarkan slug
-        $data = Product::with(['images', 'category'])
+        $data = Product::with(['images', 'categories'])
             ->where('slug', $slug)
             ->where('is_display', 1)
             ->firstOrFail();
@@ -52,7 +52,10 @@ class ClientController extends Controller
         $suggestedProduct = Product::where('slug', '!=', $slug)
             ->where('is_display', 1)
             ->where(function ($query) use ($data) {
-                $query->where('category_id', $data->category_id)
+                $categoryIds = $data->categories->pluck('id')->toArray();
+                $query->whereHas('categories', function ($q) use ($categoryIds) {
+                    $q->whereIn('categories.id', $categoryIds);
+                })
                     ->orWhere('name', 'like', '%' . $data->name . '%');
             })
             ->inRandomOrder()
@@ -65,7 +68,8 @@ class ClientController extends Controller
         // SEO
         $title = $data->name . ' | LF Store';
         $description = 'Jelajahi koleksi kacamata dari LF Store — tersedia kacamata hitam, bening anti radiasi, dan photocromic stylish untuk gaya sehari-hari.';
-        $keywords = $data->category->category_name . ', ' . $data->name . ', aksesoris kacamata dan kaos kaki';
+        $categoryNames = $data->categories->pluck('category_name')->implode(', ');
+        $keywords = $categoryNames . ', ' . $data->name . ', aksesoris kacamata dan kaos kaki';
 
         return view('detail-product', compact('data', 'suggestedProduct', 'categories', 'title', 'keywords', 'description'));
     }
@@ -82,7 +86,9 @@ class ClientController extends Controller
         }
 
         // Ambil produk berdasarkan category_id
-        $allProductbyCategory = Product::where('category_id', $category->id)
+        $allProductbyCategory = Product::whereHas('categories', function ($q) use ($category) {
+                $q->where('categories.id', $category->id);
+            })
             ->where('is_display', 1)
             ->when($query, function ($q) use ($query) {
                 $q->where('name', 'LIKE', "%{$query}%");

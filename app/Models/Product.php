@@ -17,7 +17,6 @@ class Product extends Model
     protected $table = 'products';
 
     protected $fillable = [
-        'category_id',
         'name',
         'slug',
         'description',
@@ -38,9 +37,9 @@ class Product extends Model
         return $this->hasMany(ProductImage::class);
     }
 
-    public function category()
+    public function categories()
     {
-        return $this->BelongsTo(Category::class);
+        return $this->belongsToMany(Category::class);
     }
 
     public static function boot()

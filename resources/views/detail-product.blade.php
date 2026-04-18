@@ -205,11 +205,13 @@
                     <a href="{{ route('catalog') }}"
                         class="text-gray-500 hover:text-blue-600 transition-colors">Katalog</a>
                 </li>
-                <li class="flex items-center">
-                    <i class="bx bx-chevron-right text-gray-400 text-base mx-0 sm:mx-1"></i>
-                    <a href="{{ route('category-product', $data->category->slug) }}"
-                        class="text-gray-500 hover:text-blue-600 transition-colors">{{ $data->category->category_name }}</a>
-                </li>
+                @if($data->categories->isNotEmpty())
+                    <li class="flex items-center">
+                        <i class="bx bx-chevron-right text-gray-400 text-base mx-0 sm:mx-1"></i>
+                        <a href="{{ route('category-product', $data->categories->first()->slug) }}"
+                            class="text-gray-500 hover:text-blue-600 transition-colors">{{ $data->categories->first()->category_name }}</a>
+                    </li>
+                @endif
                 <li class="flex items-center" aria-current="page">
                     <i class="bx bx-chevron-right text-gray-400 text-base mx-0 sm:mx-1"></i>
                     <span class="text-gray-900 font-medium truncate max-w-[120px] sm:max-w-xs">{{ $data->name }}</span>
@@ -299,10 +301,14 @@
                 <!-- Right: Product Info -->
                 <div class="flex flex-col h-full py-2 min-w-0">
 
-                    <a href="{{ route('category-product', $data->category->slug) }}"
-                        class="text-sm font-semibold tracking-wider text-blue-600 uppercase mb-3 inline-block hover:underline">
-                        {{ $data->category->category_name }}
-                    </a>
+                    <div class="mb-3">
+                        @foreach($data->categories as $cat)
+                            <a href="{{ route('category-product', $cat->slug) }}"
+                                class="text-sm font-semibold tracking-wider text-blue-600 uppercase inline-block hover:underline">
+                                {{ $cat->category_name }}
+                            </a>@if(!$loop->last)<span class="text-gray-400 mx-1">,</span>@endif
+                        @endforeach
+                    </div>
 
                     <div x-data="{ copied: false }" class="flex items-start justify-between gap-4 mb-4">
                         <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight break-words">

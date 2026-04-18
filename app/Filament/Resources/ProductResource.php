@@ -25,8 +25,9 @@ class ProductResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('category_id')
-                    ->relationship('category', 'category_name')
+                Forms\Components\Select::make('categories')
+                    ->relationship('categories', 'category_name')
+                    ->multiple()
                     ->required()
                     ->native(false),
                 Forms\Components\TextInput::make('name')
@@ -155,7 +156,8 @@ class ProductResource extends Resource
                     ->copyMessageDuration(1500),
                 Tables\Columns\ToggleColumn::make('is_display')
                     ->label('Display in Catalog'),
-                Tables\Columns\TextColumn::make('category.category_name')
+                Tables\Columns\TextColumn::make('categories.category_name')
+                    ->badge()
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\ImageColumn::make('image_thumbnail'),
@@ -167,8 +169,8 @@ class ProductResource extends Resource
                     ->rules(['required', 'integer', 'min:0'])
             ])
             ->filters([
-                SelectFilter::make('category')
-                    ->relationship('category', 'category_name')
+                SelectFilter::make('categories')
+                    ->relationship('categories', 'category_name')
                     ->multiple()
                     ->preload(),
                 SelectFilter::make('stock')
