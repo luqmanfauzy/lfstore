@@ -33,7 +33,7 @@
                 <div class="text-xs text-gray-500 mt-1 leading-5">
                     Jl Indrakila RT 3 no 3 kel Gn. Samarinda, baru, Kec. Balikpapan Utara<br>
                     Kota Balikpapan, Kalimantan Timur 76128<br>
-                    Telp: 0896-5071-0460
+                    Telp: 0896-9275-6919
                 </div>
             </div>
         </div>
