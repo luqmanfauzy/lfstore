@@ -221,7 +221,7 @@
                     <div
                         class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-gray-100">
                         <h1 class="text-2xl font-bold text-gray-900 tracking-tight">
-                            Mengeksplorasi: <span class="text-blue-600">{{ $categoryName }}</span>
+                            Menampilkan: <span class="text-blue-600">{{ $categoryName }}</span>
                             @if(request('query'))
                                 <span class="text-gray-400 text-lg font-normal break-words"> / "{{ request('query') }}"</span>
                             @endif

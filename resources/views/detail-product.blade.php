@@ -228,7 +228,7 @@
                     @endphp
                     <!-- Main Featured Image -->
                     <div id="mainImageContainer"
-                        class="relative group w-full aspect-square md:aspect-[4/3] lg:aspect-square overflow-hidden rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center p-4">
+                        class="relative group w-full aspect-square overflow-hidden rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center p-4 sm:p-6">
 
                         @if($imagesCount > 1)
                             <!-- Left Arrow (Main) -->
@@ -246,7 +246,7 @@
 
                         <img id="currentImage"
                             src="{{ $mainExists ? asset($mainPath) : asset('assets/images/no-image-available.png') }}"
-                            class="object-cover w-full h-full rounded-xl mix-blend-multiply transition-opacity duration-300"
+                            class="object-contain w-full h-full rounded-xl mix-blend-multiply transition-opacity duration-300"
                             onerror="this.src='{{ asset('assets/images/no-image-available.png') }}'; this.onerror=null;">
 
                         @if($imagesCount > 1)
@@ -261,21 +261,22 @@
 
                     <!-- Image Thumbnails Carousel -->
                     @if($imagesCount > 1)
-                        <div class="mt-2">
+                        <div class="mt-4 w-full">
                             <div id="thumbnail-container"
-                                class="flex gap-3 overflow-x-auto pb-2 scroll-smooth scrollbar-hide px-1">
+                                class="flex flex-nowrap gap-3 sm:gap-4 overflow-x-auto pb-2 pt-1 px-1 scroll-smooth scrollbar-hide w-full items-center">
+                                
                                 <!-- Main Thumb -->
                                 @php
                                     $thumbExists = $mainPath && file_exists(public_path($mainPath));
                                 @endphp
 
-                                <button
+                                <button type="button"
                                     onclick="changeImage('{{ $thumbExists ? asset($mainPath) : asset('assets/images/no-image-available.png') }}', this, 0)"
-                                    class="thumbnail-btn ...">
-
+                                    class="thumbnail-btn flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border-2 border-blue-600 bg-gray-50 flex items-center justify-center transition-all duration-200 outline-none hover:shadow-md focus:border-blue-600">
                                     <img src="{{ $thumbExists ? asset($mainPath) : asset('assets/images/no-image-available.png') }}"
-                                        class="w-full h-full object-cover rounded-lg mix-blend-multiply">
+                                    class="w-full h-full object-contain p-2 mix-blend-multiply">
                                 </button>
+                                
                                 <!-- Gallery Thumbs -->
                                 @foreach ($data->images as $index => $image)
                                     @php
@@ -283,12 +284,11 @@
                                         $imgExists = $imgPath && file_exists(public_path($imgPath));
                                     @endphp
 
-                                    <button
+                                    <button type="button"
                                         onclick="changeImage('{{ $imgExists ? asset($imgPath) : asset('assets/images/no-image-available.png') }}', this, {{ $index + 1 }})"
-                                        class="thumbnail-btn ...">
-
+                                        class="thumbnail-btn flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border-2 border-transparent bg-gray-50 flex items-center justify-center transition-all duration-200 outline-none hover:border-blue-300 hover:shadow-sm focus:border-blue-300">
                                         <img src="{{ $imgExists ? asset($imgPath) : asset('assets/images/no-image-available.png') }}"
-                                            class="w-full h-full object-cover rounded-lg mix-blend-multiply">
+                                        class="w-full h-full object-contain p-2 mix-blend-multiply">
                                     </button>
                                 @endforeach
                             </div>
