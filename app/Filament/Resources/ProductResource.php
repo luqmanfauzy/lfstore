@@ -11,6 +11,8 @@ use Filament\Resources\Resource;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProductResource\Pages;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 class ProductResource extends Resource
 {
@@ -54,23 +56,38 @@ class ProductResource extends Resource
                 Forms\Components\FileUpload::make('image_thumbnail')
                     ->label('Thumbnail')
                     ->image()
-                    ->imageEditor()
-                    ->imageEditorAspectRatios(['1:1'])
-                    ->imageEditorEmptyFillColor('#FFFFFF')
                     ->imageResizeTargetWidth('1024')
                     ->imageResizeTargetHeight('1024')
                     ->maxSize(102400) // 100MB limit for Filament (bypass)
                     ->directory('products/thumbnails')
                     ->disk('public')
-                    ->visibility('public'),
+                    ->visibility('public')
+                    ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
+                        $img = @imagecreatefromstring(file_get_contents($file->getRealPath()));
+                        if (!$img) {
+                            return $file->store('products/thumbnails', 'public');
+                        }
+                        
+                        // Preserve transparency for PNGs
+                        imagepalettetotruecolor($img);
+                        imagealphablending($img, false);
+                        imagesavealpha($img, true);
+
+                        ob_start();
+                        imagewebp($img, null, 75);
+                        $binary = ob_get_clean();
+                        imagedestroy($img);
+                        
+                        $filename = uniqid('thumb_') . '.webp';
+                        Storage::disk('public')->put('products/thumbnails/' . $filename, $binary);
+                        
+                        return 'products/thumbnails/' . $filename;
+                    }),
 
                 Forms\Components\FileUpload::make('images')
                     ->label('Gambar Produk')
                     ->multiple()
                     ->image()
-                    ->imageEditor()
-                    ->imageEditorAspectRatios(['1:1'])
-                    ->imageEditorEmptyFillColor('#FFFFFF')
                     ->imageResizeTargetWidth('1024')
                     ->imageResizeTargetHeight('1024')
                     ->maxSize(102400) // 100MB limit for Filament (bypass)
@@ -78,6 +95,27 @@ class ProductResource extends Resource
                     ->directory('products/images')
                     ->disk('public')
                     ->visibility('public')
+                    ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
+                        $img = @imagecreatefromstring(file_get_contents($file->getRealPath()));
+                        if (!$img) {
+                            return $file->store('products/images', 'public');
+                        }
+                        
+                        // Preserve transparency for PNGs
+                        imagepalettetotruecolor($img);
+                        imagealphablending($img, false);
+                        imagesavealpha($img, true);
+
+                        ob_start();
+                        imagewebp($img, null, 75);
+                        $binary = ob_get_clean();
+                        imagedestroy($img);
+                        
+                        $filename = uniqid('img_') . '.webp';
+                        Storage::disk('public')->put('products/images/' . $filename, $binary);
+                        
+                        return 'products/images/' . $filename;
+                    })
             ]);
     }
 
