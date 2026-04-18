@@ -12,6 +12,7 @@
         "cloudinary-labs/cloudinary-laravel": "^2.3",
         "filament/filament": "3.0",
         "guzzlehttp/guzzle": "^7.2",
+        "intervention/image": "3.0",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.10",
