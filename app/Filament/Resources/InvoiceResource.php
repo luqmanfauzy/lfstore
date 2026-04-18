@@ -244,6 +244,7 @@ class InvoiceResource extends Resource
                             ->windowSize(860, 100)
                             ->fullPage()
                             ->setScreenshotType('jpeg', 90)
+                            ->setChromePath(env('CHROME_PATH', '/usr/bin/google-chrome'))
                             ->save($path);
 
                         return response()->download($path)->deleteFileAfterSend(true);

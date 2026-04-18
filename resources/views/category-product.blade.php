@@ -43,6 +43,22 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        /* Pagination Button Fix: White Text on Blue Background */
+        nav[role="navigation"] a:first-child,
+        nav[role="navigation"] a:last-child,
+        nav[role="navigation"] span:first-child[aria-disabled="true"] > span,
+        nav[role="navigation"] span:last-child[aria-disabled="true"] > span {
+            background-color: #2563eb !important;
+            color: white !important;
+            padding: 8px 16px !important;
+            border-radius: 6px !important;
+        }
+
+        /* Gray background for disabled buttons */
+        nav[role="navigation"] span[aria-disabled="true"] > span {
+            background-color: #d1d5db !important;
+        }
     </style>
 </head>
 
