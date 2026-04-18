@@ -13,9 +13,10 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
-use Spatie\Image\Image;
-use Spatie\Image\Enums\ImageDriver;
 use Spatie\Image\Enums\Fit;
+use Spatie\Image\Enums\ImageDriver;
+use Spatie\Image\Image;
+use Filament\Forms\Components\FileUpload;
 
 class ProductResource extends Resource
 {
@@ -62,10 +63,22 @@ class ProductResource extends Resource
                     ->image()
                     ->imageResizeTargetWidth('1024')
                     ->imageResizeTargetHeight('1024')
-                    ->maxSize(102400) // 100MB limit for Filament (bypass)
+                    ->maxSize(102400)
                     ->directory('products/thumbnails')
                     ->disk('public')
                     ->visibility('public')
+                    ->getUploadedFileUsing(function (FileUpload $component, string $file): ?array {
+                        if (! Storage::disk('public')->exists($file)) {
+                            return null;
+                        }
+
+                        return [
+                            'name' => basename($file),
+                            'size' => Storage::disk('public')->size($file),
+                            'type' => 'image/webp',
+                            'url' => Storage::disk('public')->url($file),
+                        ];
+                    })
                     ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
                         $filename = uniqid('thumb_').'.webp';
                         $storagePath = storage_path('app/public/products/thumbnails/'.$filename);
@@ -87,11 +100,23 @@ class ProductResource extends Resource
                     ->image()
                     ->imageResizeTargetWidth('1024')
                     ->imageResizeTargetHeight('1024')
-                    ->maxSize(102400) // 100MB limit for Filament (bypass)
+                    ->maxSize(102400)
                     ->panelLayout('grid')
                     ->directory('products/images')
                     ->disk('public')
                     ->visibility('public')
+                    ->getUploadedFileUsing(function (FileUpload $component, string $file): ?array {
+                        if (! Storage::disk('public')->exists($file)) {
+                            return null;
+                        }
+
+                        return [
+                            'name' => basename($file),
+                            'size' => Storage::disk('public')->size($file),
+                            'type' => 'image/webp',
+                            'url' => Storage::disk('public')->url($file),
+                        ];
+                    })
                     ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
                         $filename = uniqid('img_').'.webp';
                         $storagePath = storage_path('app/public/products/images/'.$filename);
