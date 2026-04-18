@@ -2,23 +2,27 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
-use Filament\Tables;
-use App\Models\Product;
-use Filament\Forms\Form;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
-use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProductResource\Pages;
-use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use App\Models\Product;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Spatie\Image\Image;
+use Spatie\Image\Enums\ImageDriver;
+use Spatie\Image\Enums\Fit;
 
 class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-archive-box';
+
     protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
@@ -32,7 +36,7 @@ class ProductResource extends Resource
                     ->native(false),
                 Forms\Components\TextInput::make('name')
                     ->required()
-                    ->unique(Product::class, 'name', fn($record) => $record),
+                    ->unique(Product::class, 'name', fn ($record) => $record),
                 Forms\Components\Toggle::make('is_display')
                     ->label('Display in Catalog')
                     ->default(true)
@@ -63,25 +67,18 @@ class ProductResource extends Resource
                     ->disk('public')
                     ->visibility('public')
                     ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
-                        $img = @imagecreatefromstring(file_get_contents($file->getRealPath()));
-                        if (!$img) {
-                            return $file->store('products/thumbnails', 'public');
-                        }
-                        
-                        // Preserve transparency for PNGs
-                        imagepalettetotruecolor($img);
-                        imagealphablending($img, false);
-                        imagesavealpha($img, true);
+                        $filename = uniqid('thumb_').'.webp';
+                        $storagePath = storage_path('app/public/products/thumbnails/'.$filename);
 
-                        ob_start();
-                        imagewebp($img, null, 75);
-                        $binary = ob_get_clean();
-                        imagedestroy($img);
-                        
-                        $filename = uniqid('thumb_') . '.webp';
-                        Storage::disk('public')->put('products/thumbnails/' . $filename, $binary);
-                        
-                        return 'products/thumbnails/' . $filename;
+                        Storage::disk('public')->makeDirectory('products/thumbnails');
+
+                        Image::useImageDriver(ImageDriver::Gd)
+                            ->load($file->getRealPath())
+                            ->fit(Fit::Crop, 1024, 1024)
+                            ->optimize()
+                            ->save($storagePath);
+
+                        return 'products/thumbnails/'.$filename;
                     }),
 
                 Forms\Components\FileUpload::make('images')
@@ -96,26 +93,19 @@ class ProductResource extends Resource
                     ->disk('public')
                     ->visibility('public')
                     ->saveUploadedFileUsing(function (TemporaryUploadedFile $file): string {
-                        $img = @imagecreatefromstring(file_get_contents($file->getRealPath()));
-                        if (!$img) {
-                            return $file->store('products/images', 'public');
-                        }
-                        
-                        // Preserve transparency for PNGs
-                        imagepalettetotruecolor($img);
-                        imagealphablending($img, false);
-                        imagesavealpha($img, true);
+                        $filename = uniqid('img_').'.webp';
+                        $storagePath = storage_path('app/public/products/images/'.$filename);
 
-                        ob_start();
-                        imagewebp($img, null, 75);
-                        $binary = ob_get_clean();
-                        imagedestroy($img);
-                        
-                        $filename = uniqid('img_') . '.webp';
-                        Storage::disk('public')->put('products/images/' . $filename, $binary);
-                        
-                        return 'products/images/' . $filename;
-                    })
+                        Storage::disk('public')->makeDirectory('products/images');
+
+                        Image::useImageDriver(ImageDriver::Gd)
+                            ->load($file->getRealPath())
+                            ->fit(Fit::Max, 1024, 1024)
+                            ->optimize()
+                            ->save($storagePath);
+
+                        return 'products/images/'.$filename;
+                    }),
             ]);
     }
 
@@ -141,7 +131,7 @@ class ProductResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextInputColumn::make('stock')
                     ->sortable()
-                    ->rules(['required', 'integer', 'min:0'])
+                    ->rules(['required', 'integer', 'min:0']),
             ])
             ->filters([
                 SelectFilter::make('categories')
@@ -154,7 +144,7 @@ class ProductResource extends Resource
                     ->options([
                         'in_stock' => '> 2',
                         'out_of_stock' => '0',
-                        'low_stock' => '< 2'
+                        'low_stock' => '< 2',
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         // Check if a value is selected
@@ -189,5 +179,4 @@ class ProductResource extends Resource
             'edit' => Pages\EditProduct::route('/{record}/edit'),
         ];
     }
-
 }
