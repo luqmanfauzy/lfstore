@@ -284,7 +284,7 @@
 
                                     <div class="mt-auto pt-4 flex items-center justify-between border-t border-gray-50">
                                         <div>
-                                            <p class="text-xs text-gray-400 mb-0.5">Mulai dari</p>
+                                            <p class="text-sm text-gray-500">Harga</p>
                                             <p class="text-base sm:text-lg font-bold text-gray-900 tracking-tight">
                                                 Rp{{ number_format($data->price, 0, ',', '.') }}
                                             </p>
@@ -395,10 +395,7 @@
                         class="font-medium text-gray-600">LF Store</span> &copy; <span id="currentYear"></span>. All
                     rights reserved.
                 </p>
-                <div class="flex items-center space-x-6">
-                    <a href="#" class="text-xs text-gray-400 hover:text-gray-600">Kebijakan Privasi</a>
-                    <a href="#" class="text-xs text-gray-400 hover:text-gray-600">Syarat & Ketentuan</a>
-                </div>
+
             </div>
         </div>
     </footer>

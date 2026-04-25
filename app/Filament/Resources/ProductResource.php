@@ -32,10 +32,12 @@ class ProductResource extends Resource
                 Forms\Components\Select::make('categories')
                     ->relationship('categories', 'category_name')
                     ->multiple()
+                    ->preload()
                     ->required()
                     ->native(false),
                 Forms\Components\TextInput::make('name')
                     ->required()
+                    ->maxLength(200)
                     ->unique(Product::class, 'name', fn ($record) => $record),
                 Forms\Components\Toggle::make('is_display')
                     ->label('Display in Catalog')
@@ -115,10 +117,7 @@ class ProductResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
-                    ->sortable()
-                    ->copyable()
-                    ->copyMessage('Nama produk disalin')
-                    ->copyMessageDuration(1500),
+                    ->sortable(),
                 Tables\Columns\ToggleColumn::make('is_display')
                     ->label('Display in Catalog'),
                 Tables\Columns\TextColumn::make('categories.category_name')
