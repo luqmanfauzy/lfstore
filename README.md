@@ -1,66 +1,236 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# LF Store
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Toko online kacamata anti radiasi, photocromic, style, kaos kaki, dan aksesoris berbasis di Balikpapan, Kalimantan Timur. Menggunakan **Laravel 13** dengan **Filament 3** sebagai admin panel dan **WhatsApp** sebagai saluran pemesanan utama.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Tech Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Teknologi | Keterangan |
+|---|---|
+| **Framework** | Laravel 13 |
+| **PHP** | ^8.5 |
+| **Admin Panel** | Filament 3 (Livewire 3) |
+| **Database** | MySQL |
+| **Frontend** | Tailwind CSS, Alpine.js, Vite |
+| **Auth** | Laravel Breeze + Sanctum |
+| **Image Processing** | Intervention Image, Spatie Image |
+| **Invoice** | Spatie Browsershot + Puppeteer |
+| **Testing** | Pest PHP 3 |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Fitur
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **Katalog Produk** — Lihat produk dengan pencarian, filter kategori, pagination
+- **Detail Produk** — Gallery gambar, deskripsi, tombol pesan via WhatsApp
+- **Admin Panel** `/admin` — CRUD Kategori, Produk, Invoice
+- **Manajemen Invoice** — Generate invoice JPG otomatis, kalkulasi subtotal/ongkir/diskon
+- **Upload Gambar** — Auto-convert ke WebP, resize 1024x1024
+- **Stok Monitoring** — Widget produk stok rendah di dashboard admin
+- **Autentikasi** — Register, login, reset password, verifikasi email
+- **SEO** — Open Graph, meta tags
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Persyaratan Sistem
 
-## Laravel Sponsors
+- PHP ^8.5
+- Composer 2.x
+- MySQL 8.0+
+- Node.js 18+ & NPM
+- Chrome/Chromium (untuk Browsershot generate invoice)
+- GD/Imagick PHP extension
+- Fileinfo PHP extension
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## Instalasi
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### 1. Clone Repository
 
-## Contributing
+```bash
+git clone https://github.com/yourusername/lfstore.git
+cd lfstore
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 2. Install PHP Dependencies
 
-## Code of Conduct
+```bash
+composer install
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 3. Install NPM Dependencies
 
-## Security Vulnerabilities
+```bash
+npm install
+npm run build
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 4. Environment Setup
 
-## License
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Edit file `.env` sesuai konfigurasi database dan environment:
+
+```env
+APP_NAME=LF Store
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=lfstore
+DB_USERNAME=root
+DB_PASSWORD=
+
+CHROME_PATH=/usr/bin/chromium-browser
+```
+
+### 5. Database & Migrasi
+
+```bash
+php artisan migrate --seed
+```
+
+Seeder akan membuat:
+- 1 akun admin
+- 7 kategori produk
+- Puluhan produk dengan gambar
+- Data invoice contoh
+
+### 6. Storage Link
+
+```bash
+php artisan storage:link
+```
+
+### 7. Jalankan Development Server
+
+```bash
+php artisan serve
+```
+
+Akses aplikasi di `http://localhost:8000`.
+
+---
+
+## Admin Panel
+
+Panel admin dapat diakses di `/admin`.
+
+### Akun Default
+
+```
+Email: luqmannfauzy46@gmail.com
+Password: (lihat di database seed)
+```
+
+### Resources Admin
+
+| Resource | Deskripsi |
+|---|---|
+| Category | Kelola kategori produk |
+| Product | Kelola produk (multi-kategori, gambar, stok) |
+| Invoice | Buat & unduh invoice (JPG) |
+
+---
+
+## Struktur Direktori
+
+```
+app/
+├── Filament/
+│   ├── Resources/       # Filament CRUD resources
+│   └── Widgets/         # Dashboard widgets
+├── Http/
+│   ├── Controllers/
+│   │   ├── Auth/        # Breeze auth controllers
+│   │   └── ClientController.php  # Frontend controller
+│   └── Middleware/      # Custom middleware
+├── Models/              # Eloquent models
+└── Providers/
+    ├── AppServiceProvider.php
+    └── Filament/
+        └── AdminPanelProvider.php
+
+routes/
+├── web.php              # Frontend routes
+├── api.php              # API routes
+└── auth.php             # Auth routes (Breeze)
+
+resources/views/
+├── home.blade.php       # Beranda
+├── catalog.blade.php    # Katalog produk
+├── detail-product.blade.php  # Detail produk
+├── category-product.blade.php  # Produk per kategori
+├── invoice.blade.php    # Template invoice
+└── filament/            # Override views Filament
+```
+
+---
+
+## Model Relasi
+
+```
+Category ──belongsToMany──> Product ──hasMany──> ProductImage
+                                │
+Invoice ──hasMany──> InvoiceItem ──belongsTo──> Product
+```
+
+---
+
+## Routes Publik
+
+| Method | URI | Deskripsi |
+|---|---|---|
+| GET | `/` | Halaman beranda |
+| GET | `/catalog` | Katalog produk |
+| GET | `/detail-product/{slug}` | Detail produk |
+| GET | `/category-product/{slug}` | Produk per kategori |
+
+---
+
+## Deployment
+
+### Update ke Production
+
+```bash
+git fetch origin
+git reset --hard origin/main
+
+composer install --no-dev --optimize-autoloader
+php artisan migrate --force
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+### Catatan Deployment
+
+- Set `APP_ENV=production` dan `APP_DEBUG=false` di `.env`
+- Konfigurasi `CHROME_PATH` jika menggunakan fitur invoice JPG
+- Pastikan storage link sudah dibuat
+
+---
+
+## Testing
+
+```bash
+# Run all tests
+php artisan test
+
+# Run specific test
+php artisan test --filter=ProductTest
+```
+
+---
+
+## Lisensi
+
+[MIT License](LICENSE)

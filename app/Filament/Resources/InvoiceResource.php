@@ -143,7 +143,7 @@ class InvoiceResource extends Resource
                             ->label('Ongkir (Rp)')
                             ->numeric()
                             ->default(0)
-                            ->reactive()
+                            ->live(onBlur: true)
                             ->visible(fn(callable $get) => $get('has_shipping') == true)
                             ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                 static::recalculateTotal($get, $set);
@@ -184,7 +184,7 @@ class InvoiceResource extends Resource
                             ->label('Nominal Diskon (Rp)')
                             ->numeric()
                             ->default(0)
-                            ->reactive()
+                            ->live(onBlur: true)
                             ->visible(fn(callable $get) => $get('has_discount') == true)
                             ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                 static::recalculateTotal($get, $set);
